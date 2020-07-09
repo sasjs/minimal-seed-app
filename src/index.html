@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      function initSasJs() {
+        sasJs = new SASjs.default({
+          appLoc: "/Public/app",
+          debug: false,
+        });
+      }
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@sasjs/adapter@1.0.2/index.js"
+      integrity="sha256-bLCgytFAs+a3HMkmVpplANOxVvJE5ck8h5C9cWhDYLI="
+      crossorigin="anonymous"
+    ></script>
+    <script src="scripts.js"></script>
+  </head>
+  <body onload="initSasJs()">
+    <h1>Hello!</h1>
+    <h1>
+      Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
+    </h1>
+    <div class="login-form" id="login-form">
+      <input type="text" id="username" placeholder="Enter username" />
+      <input type="password" id="password" placeholder="Enter password" />
+    </div>
+    <button id="login" onclick="login()">Log in</button>
+  </body>
+</html>
