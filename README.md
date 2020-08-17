@@ -21,7 +21,7 @@ parmcards4;
     %webout(OBJ,areas)
     %webout(CLOSE)
 ;;;;
-%mp_createwebservice(path=&apploc/common, name=appInit)
+%mp_createwebservice(path=&apploc/common, name=appinit)
 
 parmcards4;
     %webout(FETCH)
@@ -32,7 +32,7 @@ parmcards4;
     %webout(OBJ,springs)
     %webout(CLOSE)
 ;;;;
-%mp_createwebservice(path=&apploc/common, name=getData)
+%mp_createwebservice(path=&apploc/common, name=getdata)
 ```
 
 Next, clone this repo, open the `index.html` file and update the `appLoc` in the `initSasJs()` function to the same folder location used above. Deploy to the SAS Web Server.
