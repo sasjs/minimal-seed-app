@@ -1,10 +1,10 @@
 {
-  "name": "minimal-seed-app",
+  "name": "@sasjs/minimal-seed-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH"
   },
   "keywords": [
     "SAS",
