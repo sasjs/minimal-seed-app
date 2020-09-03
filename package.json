@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH"
+    "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH",
+    "deploy:services": "rsync -avhe ssh ./sasjsbuild/services/* --delete $SSH_ACCOUNT:$DEPLOY_PATH"
   },
   "keywords": [
     "SAS",
