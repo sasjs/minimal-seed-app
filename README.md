@@ -9,7 +9,7 @@ It runs on both SAS 9 and Viya. To deploy the services, execute the following:
 %let apploc=/Public/myapp;
 
 /* include macros directly, else download & compile manually */
-filename mc url "https://raw.githubusercontent.com/macropeople/macrocore/master/mc_all.sas";
+filename mc url "https://raw.githubusercontent.com/sasjs/core/main/all.sas";
 %inc mc;
 
 /* create the two services */
