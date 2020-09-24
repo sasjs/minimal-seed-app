@@ -47,7 +47,7 @@ function loadData() {
   const areasDropdown = document.querySelector("#areas-dropdown");
   const selectedArea = areasDropdown.options[areasDropdown.selectedIndex].value;
   sasJs
-    .request("/common/getdata", {
+    .request("common/getdata", {
       areas: [{ area: selectedArea }],
     })
     .then((response) => {
