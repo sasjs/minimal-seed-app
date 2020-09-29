@@ -26,7 +26,7 @@
       "name": "sas9",
       "serverType": "SAS9",
       "serverUrl": "YOURSAS9SERVER",
-      "appLoc": "/User Folders/&sysuserid/My Folder/minimal-seed-app",
+      "appLoc":  "/Public/app/minimal-seed-app",
       "buildOutputFileName": "mysas9deploy.sas",
       "tgtDeployVars": {
         "serverName": "SASApp",
