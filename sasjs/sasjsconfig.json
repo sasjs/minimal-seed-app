@@ -20,7 +20,7 @@
       "assetPaths": [],
       "streamWeb": false,
       "streamWebFolder": "webv",
-      "webSourcePath": "dist"
+      "webSourcePath": "src"
     },
     {
       "name": "sas9",
@@ -35,7 +35,7 @@
       "assetPaths": [],
       "streamWeb": false,
       "streamWebFolder": "web9",
-      "webSourcePath": "build"
+      "webSourcePath": "src"
     }
   ]
 }
