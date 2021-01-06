@@ -21,7 +21,7 @@ function login() {
 
 function loadStartupData() {
   if (sasJs) {
-    sasJs.request("common/appinit", null, true).then((response) => {
+    sasJs.request("services/common/appinit", null, true).then((response) => {
       let responseJson;
       try {
         responseJson = response;
@@ -47,7 +47,7 @@ function loadData() {
   const areasDropdown = document.querySelector("#areas-dropdown");
   const selectedArea = areasDropdown.options[areasDropdown.selectedIndex].value;
   sasJs
-    .request("common/getdata", {
+    .request("services/common/getdata", {
       areas: [{ area: selectedArea }],
     })
     .then((response) => {

@@ -10,14 +10,15 @@
     <script>
       function initSasJs() {
         sasJs = new SASjs.default({
-          appLoc: "/Public/app",
+          appLoc: "/Public/app/minimal-seed-app",
           serverType: "SASVIYA",
+          serverUrl: "",
           debug: false,
         });
       }
     </script>
     <script
-      src="https://cdn.jsdelivr.net/npm/@sasjs/adapter@1/index.js"></script>
+      src="https://cdn.jsdelivr.net/npm/@sasjs/adapter@2/index.js"></script>
     <script src="scripts.js"></script>
   </head>
   <body onload="initSasJs()">
