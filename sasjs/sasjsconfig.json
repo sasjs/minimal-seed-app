@@ -1,8 +1,12 @@
 {
-  "macroFolders": ["macros"],
+  "macroFolders": [
+    "macros"
+  ],
   "programFolders": [],
   "serviceConfig": {
-    "serviceFolders": ["services/common"],
+    "serviceFolders": [
+      "services/common"
+    ],
     "initProgram": "",
     "termProgram": "",
     "macroVars": {}
@@ -22,22 +26,19 @@
   "targets": [
     {
       "name": "viya",
+      "serverUrl": "https://sas.analytium.co.uk",
       "serverType": "SASVIYA",
-      "serverUrl": "YOURSASVIYASERVER",
       "appLoc": "/Public/app/minimal-seed-app",
-      "contextName": "SAS Job Execution compute context",
+      "macroFolders": [],
+      "programFolders": [],
+      "authConfig": {
+        "access_token": "",
+        "refresh_token": "",
+        "client": "",
+        "secret": ""
+      },
       "buildConfig": {
         "buildOutputFileName": "myviyadeploy.sas",
-        "initProgram": "",
-        "termProgram": "",
-        "macroVars": {}
-      },
-      "deployConfig": {
-        "deployServicePack": true,
-        "deployScripts": ["sasjsbuild/myviyadeploy.sas"]
-      },
-      "serviceConfig": {
-        "serviceFolders": [],
         "initProgram": "",
         "termProgram": "",
         "macroVars": {}
@@ -48,11 +49,23 @@
         "termProgram": "",
         "macroVars": {}
       },
+      "serviceConfig": {
+        "serviceFolders": [],
+        "initProgram": "",
+        "termProgram": "",
+        "macroVars": {}
+      },
       "streamConfig": {
         "assetPaths": [],
         "streamWeb": false,
         "streamWebFolder": "webv",
         "webSourcePath": "dist"
+      },
+      "deployConfig": {
+        "deployServicePack": true,
+        "deployScripts": [
+          "sasjsbuild/myviyadeploy.sas"
+        ]
       }
     },
     {
@@ -65,7 +78,9 @@
       },
       "deployConfig": {
         "deployServicePack": true,
-        "deployScripts": ["sasjsbuild/myviyadeploy.sas"]
+        "deployScripts": [
+          "sasjsbuild/myviyadeploy.sas"
+        ]
       },
       "serviceConfig": {
         "serviceFolders": [],
@@ -79,7 +94,6 @@
         "termProgram": "",
         "macroVars": {}
       },
-
       "serverName": "SASApp",
       "repositoryName": "Foundation",
       "streamConfig": {
