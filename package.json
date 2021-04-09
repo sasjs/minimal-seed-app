@@ -1,5 +1,6 @@
 {
   "name": "@sasjs/minimal-seed-app",
+  "repository": "https://github.com/sasjs/minimal-seed-app",
   "version": "2.0.0",
   "description": "",
   "main": "index.js",
@@ -14,6 +15,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sasjs/core": "^1.4.0"
+    "@sasjs/cli": "^2.14.3",
+    "@sasjs/core": "^1.14.0",
+    "ghooks": "^2.0.4"
+  },
+  "config": {
+    "ghooks": {
+      "pre-commit": "sasjs lint"
+    }
   }
 }

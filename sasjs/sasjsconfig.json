@@ -7,22 +7,7 @@
   "serviceConfig": {
     "serviceFolders": [
       "sasjs/services/common"
-    ],
-    "initProgram": "",
-    "termProgram": "",
-    "macroVars": {}
-  },
-  "jobConfig": {
-    "jobFolders": [],
-    "initProgram": "",
-    "termProgram": "",
-    "macroVars": {}
-  },
-  "streamConfig": {
-    "assetPaths": [],
-    "streamWeb": false,
-    "streamWebFolder": "webv",
-    "webSourcePath": "dist"
+    ]
   },
   "targets": [
     {
@@ -30,31 +15,8 @@
       "serverUrl": "https://sas.analytium.co.uk",
       "serverType": "SASVIYA",
       "appLoc": "/Public/app/minimal-seed-app",
-      "macroFolders": [],
-      "programFolders": [],
-      "authConfig": {
-        "access_token": "",
-        "refresh_token": "",
-        "client": "",
-        "secret": ""
-      },
       "buildConfig": {
-        "buildOutputFileName": "myviyadeploy.sas",
-        "initProgram": "",
-        "termProgram": "",
-        "macroVars": {}
-      },
-      "jobConfig": {
-        "jobFolders": [],
-        "initProgram": "",
-        "termProgram": "",
-        "macroVars": {}
-      },
-      "serviceConfig": {
-        "serviceFolders": [],
-        "initProgram": "",
-        "termProgram": "",
-        "macroVars": {}
+        "buildOutputFileName": "myviyadeploy.sas"
       },
       "streamConfig": {
         "assetPaths": [],
@@ -78,22 +40,9 @@
         "buildOutputFileName": "mysas9deploy.sas"
       },
       "deployConfig": {
-        "deployServicePack": true,
         "deployScripts": [
           "sasjsbuild/myviyadeploy.sas"
         ]
-      },
-      "serviceConfig": {
-        "serviceFolders": [],
-        "initProgram": "",
-        "termProgram": "",
-        "macroVars": {}
-      },
-      "jobConfig": {
-        "jobFolders": [],
-        "initProgram": "",
-        "termProgram": "",
-        "macroVars": {}
       },
       "serverName": "SASApp",
       "repositoryName": "Foundation",
