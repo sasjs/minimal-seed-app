@@ -1,5 +1,5 @@
 {
-  "$schema": "https://cli.sasjs.io/sasjsconfig-schema.json",
+  "$schema": "https://raw.githubusercontent.com/sasjs/utils/main/src/types/sasjsconfig-schema.json",
   "macroFolders": [
     "sasjs/macros"
   ],
@@ -9,6 +9,7 @@
       "sasjs/services/common"
     ]
   },
+  "defaultTarget": "viya",
   "targets": [
     {
       "name": "viya",
@@ -20,14 +21,13 @@
       },
       "streamConfig": {
         "assetPaths": [],
-        "streamWeb": false,
+        "streamWeb": true,
         "streamWebFolder": "webv",
-        "webSourcePath": "dist"
+        "webSourcePath": "src"
       },
       "deployConfig": {
         "deployServicePack": true,
         "deployScripts": [
-          "sasjsbuild/myviyadeploy.sas"
         ]
       }
     },
@@ -48,9 +48,9 @@
       "repositoryName": "Foundation",
       "streamConfig": {
         "assetPaths": [],
-        "streamWeb": false,
+        "streamWeb": true,
         "streamWebFolder": "web9",
-        "webSourcePath": "dist"
+        "webSourcePath": "src"
       }
     }
   ]

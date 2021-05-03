@@ -15,8 +15,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sasjs/cli": "^2.14.3",
-    "@sasjs/core": "^1.14.0",
+    "@sasjs/cli": "^2.16.2",
+    "@sasjs/core": "^2.22.0",
     "ghooks": "^2.0.4"
   },
   "config": {
