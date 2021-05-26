@@ -16,12 +16,6 @@
   "license": "ISC",
   "dependencies": {
     "@sasjs/cli": "^2.16.2",
-    "@sasjs/core": "^2.22.0",
-    "ghooks": "^2.0.4"
-  },
-  "config": {
-    "ghooks": {
-      "pre-commit": "sasjs lint"
-    }
+    "@sasjs/core": "^2.32.4"
   }
 }
