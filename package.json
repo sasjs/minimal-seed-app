@@ -15,7 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sasjs/cli": "^2.16.2",
-    "@sasjs/core": "^2.32.4"
+    "@sasjs/cli": "^2.27.1",
+    "@sasjs/core": "^2.34.6"
   }
 }
