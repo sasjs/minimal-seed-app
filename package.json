@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH"
+    "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH",
+    "prepare": "cp node_modules/@sasjs/adapter/index.js src/sasjs.js"
   },
   "keywords": [
     "SAS",
@@ -15,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sasjs/adapter": "^2.8.5",
     "@sasjs/cli": "^2.27.1",
     "@sasjs/core": "^2.35.0"
   }
