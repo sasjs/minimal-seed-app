@@ -20,15 +20,12 @@
         "buildOutputFileName": "myviyadeploy.sas"
       },
       "streamConfig": {
-        "assetPaths": [],
         "streamWeb": true,
         "streamWebFolder": "webv",
         "webSourcePath": "src"
       },
       "deployConfig": {
-        "deployServicePack": true,
-        "deployScripts": [
-        ]
+        "deployServicePack": true
       }
     },
     {
@@ -39,14 +36,11 @@
         "buildOutputFileName": "mysas9deploy.sas"
       },
       "deployConfig": {
-        "deployScripts": [
-          "sasjsbuild/myviyadeploy.sas"
-        ]
+        "deployServicePack": true
       },
       "serverName": "SASApp",
       "repositoryName": "Foundation",
       "streamConfig": {
-        "assetPaths": [],
         "streamWeb": true,
         "streamWebFolder": "web9",
         "webSourcePath": "src"
