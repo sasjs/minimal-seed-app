@@ -10,12 +10,15 @@
     <link rel="stylesheet" href="style.css" />
     <script>
       function initSasJs() {
-        sasJs = new SASjs.default({
-          appLoc: "/Public/app/minimal-seed-app",
-          serverType: "SASVIYA",
-          serverUrl: "",
+        sasjs = new SASjs.default({
+          appLoc: '/Public/app/minimal-seed-app',
+          serverType: 'SASVIYA',
+          serverUrl: '',
           debug: false,
-        });
+        })
+        sasjs.checkSession().then((res) => {
+          if (res.isLoggedIn) afterLogin()
+        })
       }
     </script>
     <script src="sasjs.js"></script>
