@@ -11,10 +11,11 @@
     <script>
       function initSasJs() {
         sasjs = new SASjs.default({
-          appLoc: '/Public/app/minimal-seed-app',
+          appLoc: '/Public/app2/minimal-seed-app',
           serverType: 'SASVIYA',
           serverUrl: '',
           debug: false,
+          loginMechanism: 'Redirected',
         })
         sasjs.checkSession().then((res) => {
           if (res.isLoggedIn) afterLogin()

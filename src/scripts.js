@@ -1,11 +1,12 @@
 let sasjs
+let username
+let password
 
 function login() {
-  const username = document.querySelector('#username').value
-  const password = document.querySelector('#password').value
+  username = document.querySelector('#username').value
+  password = document.querySelector('#password').value
   sasjs.logIn(username, password).then((response) => {
-    if (response.login === false) {
-    } else {
+    if (response.isLoggedIn) {
       afterLogin()
     }
   })
@@ -23,8 +24,13 @@ function afterLogin() {
 }
 
 function loadStartupData() {
-  if (sasjs) {
-    sasjs.request('services/common/appinit', null, true).then((response) => {
+  if (!sasjs) return
+
+  sasjs
+    .request('services/common/appinit', null, undefined, async () => {
+      await sasjs.logIn(username, password)
+    })
+    .then((response) => {
       let responseJson
       try {
         responseJson = response
@@ -42,16 +48,20 @@ function loadStartupData() {
         }
       }
     })
-  }
 }
 
 function loadData() {
   const areasDropdown = document.querySelector('#areas-dropdown')
   const selectedArea = areasDropdown.options[areasDropdown.selectedIndex].value
   sasjs
-    .request('services/common/getdata', {
-      areas: [{ area: selectedArea }],
-    })
+    .request(
+      'services/common/getdata',
+      { areas: [{ area: selectedArea }] },
+      undefined,
+      async () => {
+        await sasjs.logIn(username, password)
+      }
+    )
     .then((response) => {
       const responseJson = response
       if (responseJson && responseJson.springs && responseJson.springs) {
