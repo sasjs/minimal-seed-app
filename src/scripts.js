@@ -1,30 +1,66 @@
 let sasjs
 
-function login() {
-  const username = document.querySelector('#username').value
-  const password = document.querySelector('#password').value
+function login(resolve, reject) {
+  const username = document.getElementById('username').value
+  const password = document.getElementById('password').value
   sasjs.logIn(username, password).then((response) => {
-    if (response.login === false) {
+    if (response.isLoggedIn) {
+      afterLogin(!resolve)
+      if (resolve) resolve()
     } else {
-      afterLogin()
+      if (reject) reject()
     }
   })
 }
-function afterLogin() {
-  const loadStartupDataButton = document.createElement('button')
-  loadStartupDataButton.id = 'load-startup-data'
-  loadStartupDataButton.innerText = 'Load Startup Data'
-  loadStartupDataButton.onclick = loadStartupData
-  document.body.appendChild(loadStartupDataButton)
-  const loginForm = document.querySelector('#login-form')
-  const loginButton = document.querySelector('#login')
-  loginButton.style.display = 'none'
+
+function afterLogin(insertStartUpButton = true) {
+  const loginForm = document.getElementById('login-form')
+  const loginButton = document.getElementById('login')
   loginForm.style.display = 'none'
+  loginButton.style.display = 'none'
+
+  const dataContainer = document.getElementById('data-container')
+  dataContainer.style.display = ''
+
+  if (insertStartUpButton) {
+    const loadStartupDataButton = document.createElement('button')
+    loadStartupDataButton.id = 'load-startup-data'
+    loadStartupDataButton.innerText = 'Load Startup Data'
+    loadStartupDataButton.onclick = loadStartupData
+
+    dataContainer.appendChild(loadStartupDataButton)
+  }
+}
+
+function showLogin() {
+  const loginForm = document.getElementById('login-form')
+  const loginButton = document.getElementById('login')
+  loginForm.style.display = 'flex'
+  loginButton.style.display = 'inline-block'
+
+  const dataContainer = document.getElementById('data-container')
+  dataContainer.style.display = 'none'
+}
+
+async function loginRequired() {
+  const sasjsConfig = sasjs.getSasjsConfig()
+  if (sasjsConfig.loginMechanism === 'Redirected') return await sasjs.logIn()
+
+  return new Promise((resolve, reject) => {
+    showLogin()
+    const loginButton = document.getElementById('login')
+    loginButton.onclick = () => {
+      login(resolve, reject)
+    }
+  })
 }
 
 function loadStartupData() {
-  if (sasjs) {
-    sasjs.request('services/common/appinit', null, true).then((response) => {
+  if (!sasjs) return
+
+  sasjs
+    .request('services/common/appinit', null, undefined, loginRequired)
+    .then((response) => {
       let responseJson
       try {
         responseJson = response
@@ -36,28 +72,31 @@ function loadStartupData() {
       } else {
         if (responseJson && responseJson.areas) {
           const loadStartupDataButton =
-            document.querySelector('#load-startup-data')
+            document.getElementById('load-startup-data')
           loadStartupDataButton.style.display = 'none'
           createAreasDropdown(responseJson.areas)
         }
       }
     })
-  }
 }
 
 function loadData() {
-  const areasDropdown = document.querySelector('#areas-dropdown')
+  const areasDropdown = document.getElementById('areas-dropdown')
   const selectedArea = areasDropdown.options[areasDropdown.selectedIndex].value
   sasjs
-    .request('services/common/getdata', {
-      areas: [{ area: selectedArea }],
-    })
+    .request(
+      'services/common/getdata',
+      { areas: [{ area: selectedArea }] },
+      undefined,
+      loginRequired
+    )
     .then((response) => {
       const responseJson = response
       if (responseJson && responseJson.springs && responseJson.springs) {
-        const existingTable = document.querySelector('#springs-table')
+        const existingTable = document.getElementById('springs-table')
+        const dataContainer = document.getElementById('data-container')
         if (existingTable) {
-          document.body.removeChild(existingTable)
+          dataContainer.removeChild(existingTable)
         }
         const table = document.createElement('table')
         table.id = 'springs-table'
@@ -67,12 +106,13 @@ function loadData() {
         const tableBody = document.createElement('tbody')
         table.appendChild(tableBody)
         tableRows.forEach((row) => tableBody.appendChild(row))
-        document.body.appendChild(table)
+        dataContainer.appendChild(table)
       }
     })
 }
 
 function createAreasDropdown(areas) {
+  const dataContainer = document.getElementById('data-container')
   const areasDropDown = document.createElement('select')
   areasDropDown.id = 'areas-dropdown'
   areas.forEach((area) => {
@@ -81,11 +121,11 @@ function createAreasDropdown(areas) {
     option.text = area['AREA']
     areasDropDown.options.add(option)
   })
-  document.body.appendChild(areasDropDown)
+  dataContainer.appendChild(areasDropDown)
   const submitButton = document.createElement('button')
   submitButton.onclick = loadData
   submitButton.innerText = 'Submit'
-  document.body.appendChild(submitButton)
+  dataContainer.appendChild(submitButton)
 }
 
 function createTableHeader() {
