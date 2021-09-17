@@ -1,15 +1,22 @@
 * {
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 body {
+  min-height: 100vh;
+  margin: 0;
+  padding-bottom: 30px;
+}
+
+body,
+#data-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  padding-bottom: 30px;
+}
+#data-container {
+  width: 100%;
 }
 
 .code {
@@ -64,7 +71,7 @@ table {
   border-collapse: separate;
   border-spacing: 0;
   color: #4a4a4d;
-  font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font: 14px/1.4 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 th,
 td {

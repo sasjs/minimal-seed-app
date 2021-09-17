@@ -1,35 +1,65 @@
 let sasjs
-let username
-let password
 
-function login() {
-  username = document.querySelector('#username').value
-  password = document.querySelector('#password').value
+function login(resolve, reject) {
+  const username = document.querySelector('#username').value
+  const password = document.querySelector('#password').value
   sasjs.logIn(username, password).then((response) => {
     if (response.isLoggedIn) {
-      afterLogin()
+      afterLogin(!resolve)
+      if (resolve) resolve()
+    } else {
+      if (reject) reject()
     }
   })
 }
-function afterLogin() {
-  const loadStartupDataButton = document.createElement('button')
-  loadStartupDataButton.id = 'load-startup-data'
-  loadStartupDataButton.innerText = 'Load Startup Data'
-  loadStartupDataButton.onclick = loadStartupData
-  document.body.appendChild(loadStartupDataButton)
+
+function afterLogin(insertStartUpButton = true) {
   const loginForm = document.querySelector('#login-form')
   const loginButton = document.querySelector('#login')
-  loginButton.style.display = 'none'
   loginForm.style.display = 'none'
+  loginButton.style.display = 'none'
+
+  const dataContainer = document.querySelector('#data-container')
+  dataContainer.style.display = ''
+
+  if (insertStartUpButton) {
+    const loadStartupDataButton = document.createElement('button')
+    loadStartupDataButton.id = 'load-startup-data'
+    loadStartupDataButton.innerText = 'Load Startup Data'
+    loadStartupDataButton.onclick = loadStartupData
+
+    dataContainer.appendChild(loadStartupDataButton)
+  }
+}
+
+function showLogin() {
+  const loginForm = document.querySelector('#login-form')
+  const loginButton = document.querySelector('#login')
+  loginForm.style.display = 'flex'
+  loginButton.style.display = 'inline-block'
+
+  const dataContainer = document.querySelector('#data-container')
+  dataContainer.style.display = 'none'
+}
+
+async function loginRequired() {
+  const sasjsConfig = sasjs.getSasjsConfig()
+  if (sasjsConfig.loginMechanism === 'Redirected') return await sasjs.logIn()
+
+  return new Promise((resolve, reject) => {
+    showLogin()
+    const loginButton = document.querySelector('#login')
+    loginButton.onclick = () => {
+      login(resolve, reject)
+    }
+  })
 }
 
 function loadStartupData() {
   if (!sasjs) return
 
   sasjs
-    .request('services/common/appinit', null, undefined, async () => {
-      await sasjs.logIn(username, password)
-    })
+    .request('services/common/appinit', null, undefined, loginRequired)
     .then((response) => {
       let responseJson
       try {
@@ -58,16 +88,15 @@ function loadData() {
       'services/common/getdata',
       { areas: [{ area: selectedArea }] },
       undefined,
-      async () => {
-        await sasjs.logIn(username, password)
-      }
+      loginRequired
     )
     .then((response) => {
       const responseJson = response
       if (responseJson && responseJson.springs && responseJson.springs) {
         const existingTable = document.querySelector('#springs-table')
+        const dataContainer = document.querySelector('#data-container')
         if (existingTable) {
-          document.body.removeChild(existingTable)
+          dataContainer.removeChild(existingTable)
         }
         const table = document.createElement('table')
         table.id = 'springs-table'
@@ -77,12 +106,13 @@ function loadData() {
         const tableBody = document.createElement('tbody')
         table.appendChild(tableBody)
         tableRows.forEach((row) => tableBody.appendChild(row))
-        document.body.appendChild(table)
+        dataContainer.appendChild(table)
       }
     })
 }
 
 function createAreasDropdown(areas) {
+  const dataContainer = document.querySelector('#data-container')
   const areasDropDown = document.createElement('select')
   areasDropDown.id = 'areas-dropdown'
   areas.forEach((area) => {
@@ -91,11 +121,11 @@ function createAreasDropdown(areas) {
     option.text = area['AREA']
     areasDropDown.options.add(option)
   })
-  document.body.appendChild(areasDropDown)
+  dataContainer.appendChild(areasDropDown)
   const submitButton = document.createElement('button')
   submitButton.onclick = loadData
   submitButton.innerText = 'Submit'
-  document.body.appendChild(submitButton)
+  dataContainer.appendChild(submitButton)
 }
 
 function createTableHeader() {
