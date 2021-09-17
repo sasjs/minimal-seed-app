@@ -1,8 +1,8 @@
 let sasjs
 
 function login(resolve, reject) {
-  const username = document.querySelector('#username').value
-  const password = document.querySelector('#password').value
+  const username = document.getElementById('username').value
+  const password = document.getElementById('password').value
   sasjs.logIn(username, password).then((response) => {
     if (response.isLoggedIn) {
       afterLogin(!resolve)
@@ -14,12 +14,12 @@ function login(resolve, reject) {
 }
 
 function afterLogin(insertStartUpButton = true) {
-  const loginForm = document.querySelector('#login-form')
-  const loginButton = document.querySelector('#login')
+  const loginForm = document.getElementById('login-form')
+  const loginButton = document.getElementById('login')
   loginForm.style.display = 'none'
   loginButton.style.display = 'none'
 
-  const dataContainer = document.querySelector('#data-container')
+  const dataContainer = document.getElementById('data-container')
   dataContainer.style.display = ''
 
   if (insertStartUpButton) {
@@ -33,12 +33,12 @@ function afterLogin(insertStartUpButton = true) {
 }
 
 function showLogin() {
-  const loginForm = document.querySelector('#login-form')
-  const loginButton = document.querySelector('#login')
+  const loginForm = document.getElementById('login-form')
+  const loginButton = document.getElementById('login')
   loginForm.style.display = 'flex'
   loginButton.style.display = 'inline-block'
 
-  const dataContainer = document.querySelector('#data-container')
+  const dataContainer = document.getElementById('data-container')
   dataContainer.style.display = 'none'
 }
 
@@ -48,7 +48,7 @@ async function loginRequired() {
 
   return new Promise((resolve, reject) => {
     showLogin()
-    const loginButton = document.querySelector('#login')
+    const loginButton = document.getElementById('login')
     loginButton.onclick = () => {
       login(resolve, reject)
     }
@@ -72,7 +72,7 @@ function loadStartupData() {
       } else {
         if (responseJson && responseJson.areas) {
           const loadStartupDataButton =
-            document.querySelector('#load-startup-data')
+            document.getElementById('load-startup-data')
           loadStartupDataButton.style.display = 'none'
           createAreasDropdown(responseJson.areas)
         }
@@ -81,7 +81,7 @@ function loadStartupData() {
 }
 
 function loadData() {
-  const areasDropdown = document.querySelector('#areas-dropdown')
+  const areasDropdown = document.getElementById('areas-dropdown')
   const selectedArea = areasDropdown.options[areasDropdown.selectedIndex].value
   sasjs
     .request(
@@ -93,8 +93,8 @@ function loadData() {
     .then((response) => {
       const responseJson = response
       if (responseJson && responseJson.springs && responseJson.springs) {
-        const existingTable = document.querySelector('#springs-table')
-        const dataContainer = document.querySelector('#data-container')
+        const existingTable = document.getElementById('springs-table')
+        const dataContainer = document.getElementById('data-container')
         if (existingTable) {
           dataContainer.removeChild(existingTable)
         }
@@ -112,7 +112,7 @@ function loadData() {
 }
 
 function createAreasDropdown(areas) {
-  const dataContainer = document.querySelector('#data-container')
+  const dataContainer = document.getElementById('data-container')
   const areasDropDown = document.createElement('select')
   areasDropDown.id = 'areas-dropdown'
   areas.forEach((area) => {
