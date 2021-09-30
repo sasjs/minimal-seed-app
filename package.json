@@ -20,6 +20,7 @@
     "@sasjs/core": "^2.45.2"
   },
   "devDependencies": {
+    "all-contributors-cli": "^6.20.0",
     "cpy-t": "^1.1.5"
   }
 }
