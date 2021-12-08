@@ -17,7 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@sasjs/adapter": "^2.11.2",
-    "@sasjs/core": "^2.45.2"
+    "@sasjs/core": "^2.56.1"
   },
   "devDependencies": {
     "all-contributors-cli": "^6.20.0",
