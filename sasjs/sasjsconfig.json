@@ -41,6 +41,21 @@
         "streamWebFolder": "web9",
         "webSourcePath": "src"
       }
+    },
+    {
+      "name": "server",
+      "serverType": "SASJS",
+      "appLoc": "/Public/app/minimal-seed-app",
+      "deployConfig": {
+        "deployServicePack": true
+      },
+      "streamConfig": {
+        "streamWebFolder": "",
+        "streamWeb": false,
+        "webSourcePath": "",
+        "streamServiceName": "",
+        "assetPaths": []
+      }
     }
   ]
 }
