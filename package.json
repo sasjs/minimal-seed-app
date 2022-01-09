@@ -16,11 +16,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sasjs/adapter": "^3.1.0",
-    "@sasjs/core": "^2.56.1"
+    "@sasjs/adapter": "^3.1.0"
   },
   "devDependencies": {
-    "all-contributors-cli": "^6.20.0",
+    "@sasjs/core": "^3.9.1",
     "cpy-t": "^1.1.5"
   }
 }
