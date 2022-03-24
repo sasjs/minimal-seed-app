@@ -1,7 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/sasjs/utils/main/src/types/sasjsconfig-schema.json",
   "macroFolders": ["sasjs/macros"],
-  "programFolders": [],
   "serviceConfig": {
     "serviceFolders": ["sasjs/services/common"]
   },
@@ -47,10 +46,11 @@
       "serverType": "SASJS",
       "appLoc": "/Public/app/minimal-seed-app",
       "streamConfig": {
+        "streamLogo": "favicon.ico",
         "streamWebFolder": "web",
         "streamWeb": true,
         "webSourcePath": "src",
-        "streamServiceName": "minimal"
+        "streamServiceName": "minimal-seed-app-by-saad"
       }
     }
   ]
