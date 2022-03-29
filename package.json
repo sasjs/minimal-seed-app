@@ -6,7 +6,9 @@
   "main": "index.js",
   "scripts": {
     "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH",
-    "prepare": "cpy-t node_modules/@sasjs/adapter/index.js src/sasjs.js"
+    "prepare": "cpy-t node_modules/@sasjs/adapter/index.js src/sasjs.js",
+    "requestinit": "sasjs request services/common/appinit",
+    "requestdata": "sasjs request services/common/getdata -d sasjs/utils/requestpayload.json"
   },
   "keywords": [
     "SAS",
