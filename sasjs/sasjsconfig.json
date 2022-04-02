@@ -49,7 +49,7 @@
         "streamWebFolder": "web",
         "streamWeb": true,
         "webSourcePath": "src",
-        "streamServiceName": "minimal-seed-app-by-saad"
+        "streamServiceName": "minimal-seed-app"
       }
     }
   ]
