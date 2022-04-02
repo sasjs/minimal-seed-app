@@ -12,11 +12,14 @@
   "targets": [
     {
       "name": "viya",
-      "serverUrl": "https://4gl.viyacloud.sas.com",
+      "serverUrl": "",
       "serverType": "SASVIYA",
       "appLoc": "/Public/app/minimal-seed-app",
       "buildConfig": {
         "buildOutputFileName": "myviyadeploy.sas"
+      },
+      "httpsAgentOptions": {
+        "allowInsecureRequests": false
       },
       "streamConfig": {
         "streamWeb": true,
