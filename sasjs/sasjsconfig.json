@@ -19,7 +19,9 @@
         "buildOutputFileName": "myviyadeploy.sas"
       },
       "streamConfig": {
-        "streamWeb": true
+        "streamWeb": true,
+        "streamWebFolder": "web",
+        "webSourcePath": "src"
       }
     },
     {
