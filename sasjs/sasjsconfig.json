@@ -8,6 +8,7 @@
       "sasjs/services/common"
     ]
   },
+  "syncFolder": "mocks",
   "defaultTarget": "viya",
   "targets": [
     {
