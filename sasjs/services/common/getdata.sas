@@ -10,7 +10,7 @@
 %webout(FETCH)
 
 proc sql;
-create table springs as select * from sashelp.springs
+create table springs as select * from mydb.springs
   where area in (select area from work.areas);
 
 %webout(OPEN)

@@ -6,7 +6,7 @@
   "serviceConfig": {
     "serviceFolders": [
       "sasjs/services/common"
-    ]
+    ],"initProgram": "sasjs/utils/serviceinit.sas"
   },
   "syncFolder": "sasjs/mocks",
   "defaultTarget": "viya",
@@ -15,7 +15,7 @@
       "name": "viya",
       "serverUrl": "",
       "serverType": "SASVIYA",
-      "appLoc": "/Public/app/minimal-seed-app",
+      "appLoc": "/Public/app/minimal-seed-app2",
       "buildConfig": {
         "buildOutputFileName": "myviyadeploy.sas"
       },
@@ -55,7 +55,8 @@
         "streamWebFolder": "web",
         "streamWeb": true,
         "webSourcePath": "src",
-        "streamServiceName": "minimal-seed-app"
+        "streamServiceName": "minimal-seed-app",
+        "assetPaths": []
       }
     }
   ]
