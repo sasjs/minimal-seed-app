@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/sasjs/minimal-seed-app/compare/v1.0.0...v1.0.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* enabling SASjs Server release pack ([5cf9c8f](https://github.com/sasjs/minimal-seed-app/commit/5cf9c8f213c57dffab94d8293cbd65ecabf0dfa7))
+
 # 1.0.0 (2022-06-21)
 
 
