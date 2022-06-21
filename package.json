@@ -20,11 +20,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sasjs/adapter": "^3.10.3",
-    "@sasjs/cli": "^3.15.0"
   },
   "devDependencies": {
+    "@sasjs/adapter": "^3.10.3",
     "@sasjs/core": "^4.31.3",
+    "@sasjs/cli": "^3.15.0",
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^8.0.4",
     "cpy-t": "^1.1.5",
     "prettier": "^2.7.1"
   }
