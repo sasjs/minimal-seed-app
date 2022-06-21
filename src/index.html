@@ -15,9 +15,9 @@
           serverType: 'SASVIYA',
           serverUrl: '',
           debug: false,
-          loginMechanism: 'Redirected',
+          loginMechanism: 'Redirected'
         })
-        sasjs.checkSession().then((res) => {
+        sasjs.checkSession().then(res => {
           if (res.isLoggedIn) afterLogin()
         })
       }
