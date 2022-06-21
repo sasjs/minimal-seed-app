@@ -27,7 +27,7 @@ jobs:
         env:
           CI: true
 
-      - name: create sas9 build and Add to Release
+      - name: create SAS 9 EBI build and Add to Release
         run: |
           npx sasjs cb -t sas9
           mkdir ./artefacts

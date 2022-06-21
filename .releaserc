@@ -19,7 +19,7 @@
       {
         "assets": [
           {
-            "path": "./artefacts/sasjs.json.zip",
+            "path": "./artefacts/server.json.zip",
             "label": "SASjs Streamed App"
           },
           {
