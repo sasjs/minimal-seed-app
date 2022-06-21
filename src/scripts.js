@@ -3,7 +3,7 @@ let sasjs
 function login(resolve, reject) {
   const username = document.getElementById('username').value
   const password = document.getElementById('password').value
-  sasjs.logIn(username, password).then((response) => {
+  sasjs.logIn(username, password).then(response => {
     if (response.isLoggedIn) {
       afterLogin(!resolve)
       if (resolve) resolve()
@@ -60,7 +60,7 @@ function loadStartupData() {
 
   sasjs
     .request('services/common/appinit', null, undefined, loginRequired)
-    .then((response) => {
+    .then(response => {
       let responseJson
       try {
         responseJson = response
@@ -71,8 +71,9 @@ function loadStartupData() {
         loadStartupData()
       } else {
         if (responseJson && responseJson.areas) {
-          const loadStartupDataButton =
-            document.getElementById('load-startup-data')
+          const loadStartupDataButton = document.getElementById(
+            'load-startup-data'
+          )
           loadStartupDataButton.style.display = 'none'
           createAreasDropdown(responseJson.areas)
         }
@@ -90,7 +91,7 @@ function loadData() {
       undefined,
       loginRequired
     )
-    .then((response) => {
+    .then(response => {
       const responseJson = response
       if (responseJson && responseJson.springs && responseJson.springs) {
         const existingTable = document.getElementById('springs-table')
@@ -105,7 +106,7 @@ function loadData() {
         const tableRows = createRows(responseJson.springs)
         const tableBody = document.createElement('tbody')
         table.appendChild(tableBody)
-        tableRows.forEach((row) => tableBody.appendChild(row))
+        tableRows.forEach(row => tableBody.appendChild(row))
         dataContainer.appendChild(table)
       }
     })
@@ -115,7 +116,7 @@ function createAreasDropdown(areas) {
   const dataContainer = document.getElementById('data-container')
   const areasDropDown = document.createElement('select')
   areasDropDown.id = 'areas-dropdown'
-  areas.forEach((area) => {
+  areas.forEach(area => {
     const option = new Option()
     option.value = area['AREA']
     option.text = area['AREA']
@@ -139,9 +140,9 @@ function createTableHeader() {
     'AREA',
     'TYPE',
     'FARENHEIT',
-    'CELSIUS',
+    'CELSIUS'
   ]
-  columnNames.forEach((columnName) => {
+  columnNames.forEach(columnName => {
     const header = document.createElement('th')
     header.innerText = columnName
     row.appendChild(header)
@@ -152,7 +153,7 @@ function createTableHeader() {
 
 function createRows(dataRows) {
   const rows = []
-  dataRows.forEach((dataRow) => {
+  dataRows.forEach(dataRow => {
     const row = document.createElement('tr')
     for (field in dataRow) {
       const cell = document.createElement('td')
