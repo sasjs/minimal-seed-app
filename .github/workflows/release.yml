@@ -40,7 +40,7 @@ jobs:
 
       - name: create SASjs build and Add to Release
         run: |
-          npx sasjs cb -t sasjs
+          npx sasjs cb -t server
           cp ./sasjsbuild/sasjs.json.zip ./artefacts/sasjs.json.zip
 
       - name: Install Semantic Release and plugins
