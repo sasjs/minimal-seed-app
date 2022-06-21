@@ -36,7 +36,7 @@ jobs:
       - name: create Viya build and Add to Release
         run: |
           npx sasjs cb -t viya
-          cp ./sasjsbuild/viya.sas ./artefacts/viya.sas
+          cp ./sasjsbuild/myviyadeploy.sas ./artefacts/viya.sas
 
       - name: create SASjs build and Add to Release
         run: |
