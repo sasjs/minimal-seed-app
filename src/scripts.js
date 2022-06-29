@@ -163,3 +163,20 @@ function createRows(dataRows) {
   })
   return rows
 }
+
+function initSasJs() {
+  const sasjsElement = document.querySelector('sasjs')
+
+  sasjs = new SASjs.default({
+    appLoc: sasjsElement.getAttribute('appLoc'),
+    serverType: sasjsElement.getAttribute('serverType'),
+    serverUrl: sasjsElement.getAttribute('serverUrl'),
+    debug: sasjsElement.getAttribute('debug'),
+    loginMechanism: sasjsElement.getAttribute('loginMechanism'),
+    useComputeApi: sasjsElement.getAttribute('useComputeApi'),
+    contextName: sasjsElement.getAttribute('contextName')
+  })
+  sasjs.checkSession().then((res) => {
+    if (res.isLoggedIn) afterLogin()
+  })
+}

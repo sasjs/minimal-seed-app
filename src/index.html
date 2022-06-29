@@ -6,25 +6,20 @@
   <link rel="shortcut icon" href="./favicon.ico" />
   <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <script>
-    function initSasJs() {
-      sasjs = new SASjs.default({
-        appLoc: '/Public/app/minimal-seed-app',
-        serverType: 'SASJS',
-        serverUrl: '',
-        debug: false,
-        loginMechanism: 'Redirected'
-      })
-      sasjs.checkSession().then((res) => {
-        if (res.isLoggedIn) afterLogin()
-      })
-    }
-  </script>
   <script src="sasjs.js"></script>
   <script src="scripts.js"></script>
 </head>
 
 <body onload="initSasJs()">
+  <sasjs
+    appLoc="/Public/app/minimal-seed-app"
+    serverType="SASJS"
+    serverUrl="http://localhost:5000"
+    loginMechanism="Redirected"
+    debug="false"
+    useComputeApi="true"
+    contextName="minimal-seed-app compute context"
+  ></sasjs>
   <h1>Hello!</h1>
   <h1>
     Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
