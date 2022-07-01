@@ -164,7 +164,7 @@ function createRows(dataRows) {
   return rows
 }
 
-function initSasJs() {
+function getSasjsAttribute() {
   const sasjsElement = document.querySelector('sasjs')
 
   sasjs = new SASjs.default({
