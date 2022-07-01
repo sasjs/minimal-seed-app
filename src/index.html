@@ -1,40 +1,41 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      function initSasJs() {
+        sasjs = new SASjs.default({
+          appLoc: '/Public/app/minimal-seed-app',
+          serverType: 'SASJS',
+          serverUrl: '',
+          debug: false,
+          loginMechanism: 'Redirected'
+        })
+        sasjs.checkSession().then((res) => {
+          if (res.isLoggedIn) afterLogin()
+        })
+      }
+    </script>
+    <script src="sasjs.js"></script>
+    <script src="scripts.js"></script>
+  </head>
 
-<head>
-  <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge" />
-  <link rel="shortcut icon" href="./favicon.ico" />
-  <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <script>
-    function initSasJs() {
-      sasjs = new SASjs.default({
-        appLoc: '/Public/app/minimal-seed-app',
-        serverType: 'SASJS',
-        serverUrl: '',
-        debug: false,
-        loginMechanism: 'Redirected'
-      })
-      sasjs.checkSession().then((res) => {
-        if (res.isLoggedIn) afterLogin()
-      })
-    }
-  </script>
-  <script src="sasjs.js"></script>
-  <script src="scripts.js"></script>
-</head>
-
-<body onload="initSasJs()">
-  <h1>Hello!</h1>
-  <h1>
-    Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
-  </h1>
-  <div class="login-form" id="login-form">
-    <input type="text" id="username" placeholder="Enter username" />
-    <input type="password" id="password" placeholder="Enter password" />
-  </div>
-  <button id="login" onclick="login()">Log in</button>
-  <div id="data-container" style="display: none"></div>
-</body>
-
+  <body onload="initSasJs()">
+    <h1>Hello!</h1>
+    <h1>
+      Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
+    </h1>
+    <div class="login-form" id="login-form">
+      <input type="text" id="username" placeholder="Enter username" />
+      <input type="password" id="password" placeholder="Enter password" />
+    </div>
+    <button id="login" onclick="login()">Log in</button>
+    <div id="data-container" style="display: none"></div>
+  </body>
 </html>
