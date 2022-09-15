@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/sasjs/minimal-seed-app/compare/v1.0.1...v1.0.2) (2022-09-15)
+
+
+### Bug Fixes
+
+* bumping sasjs dependencies ([6e71aa2](https://github.com/sasjs/minimal-seed-app/commit/6e71aa2da4fd37f6a72eb1f277526ea603623470))
+
 ## [1.0.1](https://github.com/sasjs/minimal-seed-app/compare/v1.0.0...v1.0.1) (2022-06-21)
 
 
