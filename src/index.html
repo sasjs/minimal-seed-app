@@ -10,17 +10,21 @@
     function initSasJs() {
       sasjs = new SASjs.default({
         appLoc: '/Public/app/minimal-seed-app',
-        serverType: 'SASJS',
+        serverType: 'SAS9',
         serverUrl: '',
         debug: false,
         loginMechanism: 'Redirected'
       })
+
+      console.log(`🤖[sasjs]🤖`, sasjs)
+
+
       sasjs.checkSession().then((res) => {
         if (res.isLoggedIn) afterLogin()
       })
     }
   </script>
-  <script src="sasjs.js"></script>
+  <script src="index-sas9-min.js"></script>
   <script src="scripts.js"></script>
 </head>
 

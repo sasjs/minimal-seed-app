@@ -30,6 +30,25 @@ function afterLogin(insertStartUpButton = true) {
 
     dataContainer.appendChild(loadStartupDataButton)
   }
+
+  const fileUploadForm = document.createElement('form')
+  const fileInput = document.createElement('input')
+  const submitInput = document.createElement('input')
+
+  fileUploadForm.onsubmit = (evt) => {
+    evt.preventDefault()
+  }
+
+  fileInput.type = 'file'
+  fileInput.id = 'fileUpload'
+
+  submitInput.type = 'submit'
+  submitInput.onclick = uploadFile
+
+  fileUploadForm.appendChild(fileInput)
+  fileUploadForm.appendChild(submitInput)
+  dataContainer.appendChild(document.createElement('br'))
+  dataContainer.appendChild(fileUploadForm)
 }
 
 function showLogin() {
@@ -162,4 +181,24 @@ function createRows(dataRows) {
     rows.push(row)
   })
   return rows
+}
+
+// INFO: dummy function for test purposes
+function uploadFile() {
+  const fileUpload = document.getElementById('fileUpload')
+  const file = fileUpload.files[0]
+  const { name } = file
+
+  if (!sasjs) return
+
+  sasjs
+    .uploadFile('services/files/upload', [{ file: file, fileName: name }], {
+      path: '/'
+    })
+    .then((res) => {
+      console.log(`🤖[res]🤖`, res)
+
+      alert('File upload works')
+    })
+    .catch((err) => console.log(err))
 }

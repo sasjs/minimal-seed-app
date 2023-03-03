@@ -2,3 +2,4 @@ node_modules/
 sasjsbuild/
 .env*
 sasjsresults/
+.DS_Store
