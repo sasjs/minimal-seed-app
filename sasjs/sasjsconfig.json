@@ -31,7 +31,7 @@
     {
       "name": "sas9",
       "serverType": "SAS9",
-      "appLoc": "/Public/app/minimal-seed-app",
+      "appLoc": "/Shared Data/app/minimal-seed-app",
       "buildConfig": {
         "buildOutputFileName": "mysas9deploy.sas"
       },
