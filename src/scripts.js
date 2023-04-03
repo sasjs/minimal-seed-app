@@ -13,6 +13,11 @@ function login(resolve, reject) {
   })
 }
 
+function logout() {
+  sasjs.logOut()
+  showLogin()
+}
+
 function afterLogin(insertStartUpButton = true) {
   const loginForm = document.getElementById('login-form')
   const loginButton = document.getElementById('login')
@@ -30,6 +35,19 @@ function afterLogin(insertStartUpButton = true) {
 
     dataContainer.appendChild(loadStartupDataButton)
   }
+
+  const logoutContainer = document.getElementById('logout-container')
+  logoutContainer.style.display = ''
+
+  let logoutButton = document.getElementById('logout')
+  if (!logoutButton) {
+    logoutButton = document.createElement('button')
+    logoutButton.id = 'logout'
+    logoutButton.innerText = 'Logout'
+    logoutButton.onclick = logout
+
+    logoutContainer.appendChild(logoutButton)
+  }
 }
 
 function showLogin() {
@@ -37,9 +55,12 @@ function showLogin() {
   const loginButton = document.getElementById('login')
   loginForm.style.display = 'flex'
   loginButton.style.display = 'inline-block'
+  loginButton.addEventListener('click', login)
 
   const dataContainer = document.getElementById('data-container')
   dataContainer.style.display = 'none'
+  const logoutContainer = document.getElementById('logout-container')
+  logoutContainer.style.display = 'none'
 }
 
 async function loginRequired() {
@@ -162,4 +183,18 @@ function createRows(dataRows) {
     rows.push(row)
   })
   return rows
+}
+
+window.onload = function () {
+  sasjs = new SASjs.default({
+    appLoc: '/Viyademo08 Group Folder/4GL/proj/demo',
+    serverType: 'SASVIYA',
+    debug: false
+  })
+
+  sasjs.checkSession().then((res) => {
+    console.log('res :>> ', res)
+    if (res.isLoggedIn) afterLogin()
+    else showLogin()
+  })
 }
