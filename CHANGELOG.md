@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/sasjs/minimal-seed-app/compare/v1.0.2...v1.0.3) (2023-04-03)
+
+
+### Bug Fixes
+
+* a removed inline scripts to comply with Content Security Policy ([3a4042d](https://github.com/sasjs/minimal-seed-app/commit/3a4042df010bdc400419b5197d89316408db5ad0))
+
 ## [1.0.2](https://github.com/sasjs/minimal-seed-app/compare/v1.0.1...v1.0.2) (2022-09-15)
 
 
