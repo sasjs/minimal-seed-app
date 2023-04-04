@@ -6,7 +6,8 @@
   "serviceConfig": {
     "serviceFolders": [
       "sasjs/services/common"
-    ],"initProgram": "sasjs/utils/serviceinit.sas"
+    ],
+    "initProgram": "sasjs/utils/serviceinit.sas"
   },
   "syncFolder": "sasjs/mocks",
   "defaultTarget": "viya",
@@ -48,7 +49,11 @@
     },
     {
       "name": "server",
+      "serverUrl": "http://localhost:5000",
       "serverType": "SASJS",
+      "httpsAgentOptions": {
+        "allowInsecureRequests": false
+      },
       "appLoc": "/Public/app/minimal-seed-app",
       "streamConfig": {
         "streamLogo": "favicon.ico",

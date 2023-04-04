@@ -186,15 +186,31 @@ function createRows(dataRows) {
 }
 
 window.onload = function () {
+  const sasjsElement = document.querySelector('sasjs')
+  const useComputeApi = sasjsElement.getAttribute('useComputeApi')
+
   sasjs = new SASjs.default({
-    appLoc: '/Viyademo08 Group Folder/4GL/proj/demo',
-    serverType: 'SASVIYA',
-    debug: false
+    serverUrl: sasjsElement.getAttribute('serverUrl') ?? undefined,
+    appLoc: sasjsElement.getAttribute('appLoc') ?? '',
+    serverType: sasjsElement.getAttribute('serverType'),
+    debug: sasjsElement.getAttribute('debug') === 'true',
+    loginMechanism: sasjsElement.getAttribute('loginMechanism') ?? 'Default',
+    useComputeApi:
+      useComputeApi === 'true'
+        ? true
+        : useComputeApi === 'false'
+        ? false
+        : useComputeApi,
+    contextName: sasjsElement.getAttribute('contextName') ?? ''
   })
 
-  sasjs.checkSession().then((res) => {
-    console.log('res :>> ', res)
-    if (res.isLoggedIn) afterLogin()
-    else showLogin()
-  })
+  sasjs
+    .checkSession()
+    .then((res) => {
+      if (res.isLoggedIn) afterLogin()
+      else showLogin()
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }

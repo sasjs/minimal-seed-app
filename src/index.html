@@ -12,7 +12,31 @@
     <script src="scripts.js"></script>
   </head>
 
-  <body onload="initSasJs()">
+  <body>
+    <!--
+      ## SASJS Adapter config details ##
+
+      * appLoc: The location in metadata or SAS drive where App/services will be deployed
+      * serverType: either SAS9, SASVIYA or SASJS
+      * serverUrl: Url of the server where services are deployed. Can leave blank if frontend and backend is running on same server
+      * loginMechanism: Use 'Default' for regular (user/pass) logins, or 'Redirected' for 2FA/SSO
+      * debug: Whether to enable debug on startup
+
+      ## Viya only settings ##
+      * useComputeApi: either true or false
+      * contextName: Compute Context
+
+    -->
+    <sasjs
+      appLoc="/Public/app/minimal-seed-app"
+      serverType="SASJS"
+      serverUrl="http://localhost:5000"
+      loginMechanism="Redirected"
+      debug="false"
+      useComputeApi="true"
+      contextName="minimal-seed-app compute context"
+    ></sasjs>
+
     <h1>Hello!</h1>
     <h1>
       Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
