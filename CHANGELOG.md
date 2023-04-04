@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/sasjs/minimal-seed-app/compare/v1.1.0...v1.2.0) (2023-04-04)
+
+
+### Features
+
+* added random responses in mocked getdata.js ([6b733b7](https://github.com/sasjs/minimal-seed-app/commit/6b733b729618f3f0a339710e5ad61a33bc338372))
+
 # [1.1.0](https://github.com/sasjs/minimal-seed-app/compare/v1.0.3...v1.1.0) (2023-04-04)
 
 
