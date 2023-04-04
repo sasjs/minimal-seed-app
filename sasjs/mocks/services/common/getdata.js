@@ -1,6 +1,6 @@
 // this file will take input and return a response
-
-_webout = `
+const responses = [
+  `
 {"SYSDATE":"21JUN22","SYSTIME":"17:59","springs":[{"LATITUDE":51.925,"LONGITUDE":-177.16,"NAME":"Fumaroles on Kanaga Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":219,"CELSIUS":104},{"LATITUDE":52.042,"LONGITUDE":-176.108,"NAME":"Hot Springs on Great Sitkin Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":210,"CELSIUS":99},{"LATITUDE":51.81,"LONGITUDE":-177.79,"NAME":"Hot Spring on Tanaga Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":null,"CELSIUS":null},{"LATITUDE":51.97,"LONGITUDE":-176.61,"NAME":"Hot Springs on Adak Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":154,"CELSIUS":68}],
 "SYSUSERID":"sasjsuser",
 "MF_GETUSER":"SASjs User",
@@ -17,4 +17,53 @@ _webout = `
 "SYSWARNINGTEXT":"",
 "END_DTTM":"2022-06-21T17:59:14.515731",
 "AUTOEXEC":"","MEMSIZE":"0KB"}
-`;
+`,
+  `
+{"SYSDATE":"29JUN22","SYSTIME":"18:25","springs":[{"LATITUDE":53.207,"LONGITUDE":-168.445,"NAME":"Hot Springs Near Geyser Bight","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":null,"CELSIUS":null},{"LATITUDE":53.892,"LONGITUDE":-166.93,"NAME":"Makushin Volcano Fumaroles","AREA":"Unalaska","TYPE":"Hotspring","FARENHEIT":310,"CELSIUS":154 },{"LATITUDE":54.9,"LONGITUDE":-162.885,"NAME":"Hot Spring on Amagat Island","AREA":"False Pass" ,"TYPE":"Hotspring","FARENHEIT":null,"CELSIUS":null},{"LATITUDE":53.213,"LONGITUDE":-168.463,"NAME":"Hot Springs Near Geyser Bight","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":216,"CELSIUS":102},{"LATITUDE":53.223,"LONGITUDE":-168.477,"NAME":"Hot Springs Near Geyser Bight","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":214,"CELSIUS":101},{"LATITUDE":53.443,"LONGITUDE":-168.092,"NAME":"Thermal Springs In Okmok Caldera","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":212,"CELSIUS":100}],
+"SYSUSERID":"sasjsuser",
+"MF_GETUSER":"SASjs User",
+"_DEBUG":"",
+"_PROGRAM":"/Public/app/minimal-seed-app/services/common/getdata.sas",
+"SYSCC":"1012",
+"SYSERRORTEXT":"File WORK.AREAS.DATA does not exist.",
+"SYSHOSTINFOLONG":"",
+"SYSHOSTNAME":"https://sasjs.com",
+"SYSPROCESSID":"41DD63242C44ED914018000000000000",
+"SYSPROCESSMODE":"SAS Batch Mode",
+"SYSPROCESSNAME":"",
+"SYSJOBID":"24184",
+"SYSSCPL":"WINDOWS",
+"SYSSITE":"0",
+"SYSTCPIPHOSTNAME":"https://sasjs.com",
+"SYSVLONG":"",
+"SYSWARNINGTEXT":"",
+"END_DTTM":"2022-06-29T18:25:55.407000",
+"AUTOEXEC":"",
+"MEMSIZE":"2GB"}
+`,
+  `
+{"SYSDATE":"28JUN22","SYSTIME":"10:46","springs":[{"LATITUDE":44.299,"LONGITUDE":-110.517,"NAME":"Heart Lake Geyser Basin,Middle Gr","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":174,"CELSIUS":79},{"LATITUDE":44.671,"LONGITUDE":-110.29,"NAME":"Ponuntpa Springs Group","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":180,"CELSIUS":82},{"LATITUDE":44.244,"LONGITUDE":-111.022,"NAME":"Boundary Creek Hot Springs","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":181,"CELSIUS":83},{"LATITUDE":44.414,"LONGITUDE":-110.817,"NAME":"Lone Star Geyser Basin,Footbridge","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":183,"CELSIUS":84},{"LATITUDE":44.722,"LONGITUDE":-110.701,"NAME":"Echinus Geyser","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":185,"CELSIUS":85},{"LATITUDE":44.461,"LONGITUDE":-110.854,"NAME":"Emerald Pool","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":158,"CELSIUS":70}],
+"SYSUSERID":"sasjsuser",
+"MF_GETUSER":"SASjs User",
+"_DEBUG":"",
+"_PROGRAM":"/Public/app/minimal-seed-app/services/common/getdata.sas",
+"SYSCC":"1012",
+"SYSERRORTEXT":"File WORK.AREAS.DATA does not exist.",
+"SYSHOSTINFOLONG":"",
+"SYSHOSTNAME":"https://sasjs.com",
+"SYSPROCESSID":"41DD635DA00D1EB84018000000000000",
+"SYSPROCESSMODE":"SAS Batch Mode",
+"SYSPROCESSNAME":"",
+"SYSJOBID":"14684",
+"SYSSCPL":"WINDOWS",
+"SYSSITE":"0",
+"SYSTCPIPHOSTNAME":"https://sasjs.com",
+"SYSVLONG":"",
+"SYSWARNINGTEXT":"",
+"END_DTTM":"2022-06-28T10:46:29.056000",
+"AUTOEXEC":"",
+"MEMSIZE":"2GB"}
+`
+]
+
+_webout = responses[Math.floor(Math.random() * responses.length)]
