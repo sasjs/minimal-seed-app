@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "npx http-server ./src -p 3000",
     "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH",
     "prepare": "cpy-t node_modules/@sasjs/adapter/index.js src/sasjs.js",
     "requestinit": "sasjs request services/common/appinit",
