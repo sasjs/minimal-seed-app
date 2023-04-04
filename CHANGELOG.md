@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/sasjs/minimal-seed-app/compare/v1.0.3...v1.1.0) (2023-04-04)
+
+
+### Bug Fixes
+
+* bump sasjs packages ([f1b9074](https://github.com/sasjs/minimal-seed-app/commit/f1b90749b3c0c778a329702ca0bdc3c6785142df))
+* moved js function from index.html to script.js ([04a2c65](https://github.com/sasjs/minimal-seed-app/commit/04a2c65cdeef42a3db3f884605e49977c06b9c74))
+
+
+### Features
+
+* add logout functionality ([de8d3f5](https://github.com/sasjs/minimal-seed-app/commit/de8d3f55dd94287e99402b5ed36aaa56b09e6383))
+
 ## [1.0.3](https://github.com/sasjs/minimal-seed-app/compare/v1.0.2...v1.0.3) (2023-04-03)
 
 
