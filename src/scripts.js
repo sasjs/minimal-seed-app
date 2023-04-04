@@ -204,8 +204,13 @@ window.onload = function () {
     contextName: sasjsElement.getAttribute('contextName') ?? ''
   })
 
-  sasjs.checkSession().then((res) => {
-    if (res.isLoggedIn) afterLogin()
-    else showLogin()
-  })
+  sasjs
+    .checkSession()
+    .then((res) => {
+      if (res.isLoggedIn) afterLogin()
+      else showLogin()
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
