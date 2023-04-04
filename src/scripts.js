@@ -13,6 +13,11 @@ function login(resolve, reject) {
   })
 }
 
+function logout() {
+  sasjs.logOut()
+  showLogin()
+}
+
 function afterLogin(insertStartUpButton = true) {
   const loginForm = document.getElementById('login-form')
   const loginButton = document.getElementById('login')
@@ -30,6 +35,19 @@ function afterLogin(insertStartUpButton = true) {
 
     dataContainer.appendChild(loadStartupDataButton)
   }
+
+  const logoutContainer = document.getElementById('logout-container')
+  logoutContainer.style.display = ''
+
+  let logoutButton = document.getElementById('logout')
+  if (!logoutButton) {
+    logoutButton = document.createElement('button')
+    logoutButton.id = 'logout'
+    logoutButton.innerText = 'Logout'
+    logoutButton.onclick = logout
+
+    logoutContainer.appendChild(logoutButton)
+  }
 }
 
 function showLogin() {
@@ -37,9 +55,12 @@ function showLogin() {
   const loginButton = document.getElementById('login')
   loginForm.style.display = 'flex'
   loginButton.style.display = 'inline-block'
+  loginButton.addEventListener('click', login)
 
   const dataContainer = document.getElementById('data-container')
   dataContainer.style.display = 'none'
+  const logoutContainer = document.getElementById('logout-container')
+  logoutContainer.style.display = 'none'
 }
 
 async function loginRequired() {
@@ -162,4 +183,34 @@ function createRows(dataRows) {
     rows.push(row)
   })
   return rows
+}
+
+window.onload = function () {
+  const sasjsElement = document.querySelector('sasjs')
+  const useComputeApi = sasjsElement.getAttribute('useComputeApi')
+
+  sasjs = new SASjs.default({
+    serverUrl: sasjsElement.getAttribute('serverUrl') ?? undefined,
+    appLoc: sasjsElement.getAttribute('appLoc') ?? '',
+    serverType: sasjsElement.getAttribute('serverType'),
+    debug: sasjsElement.getAttribute('debug') === 'true',
+    loginMechanism: sasjsElement.getAttribute('loginMechanism') ?? 'Default',
+    useComputeApi:
+      useComputeApi === 'true'
+        ? true
+        : useComputeApi === 'false'
+        ? false
+        : useComputeApi,
+    contextName: sasjsElement.getAttribute('contextName') ?? ''
+  })
+
+  sasjs
+    .checkSession()
+    .then((res) => {
+      if (res.isLoggedIn) afterLogin()
+      else showLogin()
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
