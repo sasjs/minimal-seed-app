@@ -25,7 +25,7 @@ function afterLogin(insertStartUpButton = true) {
   loginButton.style.display = 'none'
 
   const dataContainer = document.getElementById('data-container')
-  dataContainer.style.display = ''
+  dataContainer.classList.remove('hidden')
 
   if (insertStartUpButton) {
     const loadStartupDataButton = document.createElement('button')
@@ -37,7 +37,7 @@ function afterLogin(insertStartUpButton = true) {
   }
 
   const logoutContainer = document.getElementById('logout-container')
-  logoutContainer.style.display = ''
+  logoutContainer.classList.remove('hidden')
 
   let logoutButton = document.getElementById('logout')
   if (!logoutButton) {
@@ -58,9 +58,9 @@ function showLogin() {
   loginButton.addEventListener('click', login)
 
   const dataContainer = document.getElementById('data-container')
-  dataContainer.style.display = 'none'
+  dataContainer.classList.add('hidden')
   const logoutContainer = document.getElementById('logout-container')
-  logoutContainer.style.display = 'none'
+  logoutContainer.classList.add('hidden')
 }
 
 async function loginRequired() {
@@ -98,6 +98,9 @@ function loadStartupData() {
           createAreasDropdown(responseJson.areas)
         }
       }
+    })
+    .catch((err) => {
+      console.error(err)
     })
 }
 
@@ -200,6 +203,8 @@ window.onload = function () {
         ? true
         : useComputeApi === 'false'
         ? false
+        : useComputeApi === 'null'
+        ? null
         : useComputeApi,
     contextName: sasjsElement.getAttribute('contextName') ?? ''
   })
