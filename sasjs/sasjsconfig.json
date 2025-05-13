@@ -16,18 +16,28 @@
       "name": "viya",
       "serverUrl": "",
       "serverType": "SASVIYA",
-      "appLoc": "/Public/app/minimal-seed-app2",
-      "buildConfig": {
-        "buildOutputFileName": "myviyadeploy.sas"
-      },
       "httpsAgentOptions": {
         "allowInsecureRequests": false
+      },
+      "appLoc": "/Public/4gl/minimal-seed-app",
+      "deployConfig": {
+        "deployServicePack": true,
+        "deployScripts": []
+      },
+      "buildConfig": {
+        "buildOutputFileName": "myviyadeploy.sas",
+        "initProgram": "",
+        "termProgram": "",
+        "macroVars": {}
       },
       "streamConfig": {
         "streamWeb": true,
         "streamWebFolder": "web",
-        "webSourcePath": "src"
-      }
+        "webSourcePath": "src",
+        "assetPaths": [],
+        "streamServiceName": "clickme"
+      },
+      "contextName": "SAS Job Execution compute context"
     },
     {
       "name": "sas9",

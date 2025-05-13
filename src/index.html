@@ -3,10 +3,6 @@
   <head>
     <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="shortcut icon" href="./favicon.ico" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="style.css" />
     <script src="sasjs.js"></script>
     <script src="scripts.js"></script>
@@ -30,11 +26,11 @@
     <sasjs
       appLoc="/Public/app/minimal-seed-app"
       serverType="SASJS"
-      serverUrl="http://localhost:5000"
+      serverUrl=""
       loginMechanism="Redirected"
       debug="false"
       useComputeApi="true"
-      contextName="minimal-seed-app compute context"
+      contextName="SAS Job Execution compute context"
     ></sasjs>
 
     <h1>Hello!</h1>
@@ -46,7 +42,7 @@
       <input type="password" id="password" placeholder="Enter password" />
     </div>
     <button id="login">Log in</button>
-    <div id="data-container" style="display: none"></div>
-    <div id="logout-container" style="display: none"></div>
+    <div id="data-container" class="hidden"></div>
+    <div id="logout-container" class="hidden"></div>
   </body>
 </html>
