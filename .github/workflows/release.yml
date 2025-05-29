@@ -27,20 +27,23 @@ jobs:
         env:
           CI: true
 
+      - name: install sasjs CLI globally
+        run: npm i -g @sasjs/cli
+
       - name: create SAS 9 EBI build and Add to Release
         run: |
-          npx sasjs cb -t sas9
+          sasjs cb -t sas9
           mkdir ./artefacts
           cp ./sasjsbuild/mysas9deploy.sas ./artefacts/sas9.sas
 
       - name: create Viya build and Add to Release
         run: |
-          npx sasjs cb -t viya
+          sasjs cb -t viya
           cp ./sasjsbuild/myviyadeploy.sas ./artefacts/viya.sas
 
       - name: create SASjs build and Add to Release
         run: |
-          npx sasjs cb -t server
+          sasjs cb -t server
           cp ./sasjsbuild/server.json.zip ./artefacts/server.json.zip
 
       - name: Install Semantic Release and plugins
