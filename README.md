@@ -5,7 +5,22 @@
 
 This is the minimal seed app for [SASjs](https://github.com/sasjs/adapter).
 
-It runs on both SAS 9 and Viya. To deploy the services, execute the following:
+## Quick Start on Viya
+
+Just run the following in SAS Studio:
+
+```sas
+filename sasjsmsa url
+  "https://github.com/sasjs/minimal-seed-app/releases/latest/download/viya.sas";
+%inc sasjsmsa;
+```
+
+This will deploy the streaming version of the app (compiled using `sasjs cb`)
+
+## SAS9 Setup
+
+Also works on Viya (but for that it is better to use the SASjs CLI).
+To deploy the backend services, execute the following:
 
 ```sas
 /* define the app location, eg in metadata or Viya folders service */
