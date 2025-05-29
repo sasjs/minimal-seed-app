@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/sasjs/minimal-seed-app/compare/v1.2.0...v1.3.0) (2025-05-29)
+
+
+### Bug Fixes
+
+* CSP issues ([fa4ee7b](https://github.com/sasjs/minimal-seed-app/commit/fa4ee7ba35897aa00cd4193b7efa1e3d5f15cfa5))
+* pipeline ([9479477](https://github.com/sasjs/minimal-seed-app/commit/94794775f777df9e1602e86de160e98c56dd9f7e))
+
+
+### Features
+
+* refreshing for Viya 2025 streaming approach ([9b1c66e](https://github.com/sasjs/minimal-seed-app/commit/9b1c66e6fedce9445f9b68121fa4665102cffa8a))
+
 # [1.2.0](https://github.com/sasjs/minimal-seed-app/compare/v1.1.0...v1.2.0) (2023-04-04)
 
 
