@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/sasjs/minimal-seed-app/compare/v1.3.0...v1.3.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* (deps) bump @sasjs/adapter 4.16.0, @sasjs/core 4.59.7 and @sasjs/cli 4.12.14 ([7f2a8b5](https://github.com/sasjs/minimal-seed-app/commit/7f2a8b5ffaabf36ec4219062626850a3d54796b7))
+
 # [1.3.0](https://github.com/sasjs/minimal-seed-app/compare/v1.2.0...v1.3.0) (2025-05-29)
 
 
