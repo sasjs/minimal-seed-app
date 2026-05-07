@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/sasjs/minimal-seed-app/compare/v1.3.1...v1.3.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* bumping deps ([732c6c8](https://github.com/sasjs/minimal-seed-app/commit/732c6c8d00fc0f33f207c1ef99720d064076c4a6))
+
 ## [1.3.1](https://github.com/sasjs/minimal-seed-app/compare/v1.3.0...v1.3.1) (2025-11-25)
 
 
