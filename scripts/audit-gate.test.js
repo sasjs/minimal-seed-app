@@ -50,10 +50,10 @@ const report = (vulnerabilities = {}) => {
   return { vulnerabilities, metadata: { vulnerabilities: counts } }
 }
 
-const bundled = (name, severity = 'moderate', resolvedAs = name) => ({
+const bundled = (name, severity = 'moderate') => ({
   [name]: {
     severity,
-    nodes: [`node_modules/npm/node_modules/${resolvedAs}`]
+    nodes: [`node_modules/npm/node_modules/${name}`]
   }
 })
 
@@ -162,4 +162,29 @@ test('a document with no counts fails', () => {
 
   assert.notStrictEqual(result.status, 0)
   assert.match(result.output, /no metadata\.vulnerabilities/)
+})
+
+test('counts with no entries behind them fail', () => {
+  const result = run({
+    vulnerabilities: {},
+    metadata: { vulnerabilities: { total: 36, moderate: 36 } }
+  })
+
+  assert.notStrictEqual(result.status, 0)
+  assert.match(result.output, /counts 36 advisory package\(s\) but lists 0/)
+})
+
+test('counts that disagree with the entries fail', () => {
+  const result = run({
+    vulnerabilities: {
+      glob: {
+        severity: 'moderate',
+        nodes: ['node_modules/npm/node_modules/glob']
+      }
+    },
+    metadata: { vulnerabilities: { total: 2, moderate: 2 } }
+  })
+
+  assert.notStrictEqual(result.status, 0)
+  assert.match(result.output, /counts 2 advisory package\(s\) but lists 1/)
 })
