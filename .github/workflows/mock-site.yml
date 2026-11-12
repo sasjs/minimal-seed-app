@@ -1,0 +1,65 @@
+name: Publish the mocked site
+
+# The `mock` target builds the app as a static site whose backend runs in the
+# browser. Publishing it means the seed app can be looked at - and used - without
+# a SAS licence, a server, or a checkout: https://minimal.sasjs.io
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one publish at a time, and never cancel one that is half-deployed
+concurrency:
+  group: mock-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the mocked site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run check:bundle
+
+      - run: |
+          npm run mock:build
+          npm run test:mock
+
+      # a custom domain is a file in the published folder: without it Pages
+      # serves the site at github.io/<repo>/ and the DNS record points nowhere
+      - name: Add the custom domain
+        run: |
+          printf 'minimal.sasjs.io\n' > sasjsbuild/mock/CNAME
+          touch sasjsbuild/mock/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sasjsbuild/mock
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

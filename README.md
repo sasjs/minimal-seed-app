@@ -91,6 +91,9 @@ npm run mock:start
 site over http(s) on localhost - a service worker needs a secure context, so
 `file://` does not work.
 
+A published copy is built from `main` and served at
+https://minimal.sasjs.io by the "Publish the mocked site" workflow.
+
 The page and the adapter are unchanged. The worker answers `/SASjsApi/...`
 from JavaScript services that mirror the SAS ones:
 
