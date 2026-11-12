@@ -1,69 +1,114 @@
-// this file will take input and return a response
-const responses = [
-  `
-{"SYSDATE":"21JUN22","SYSTIME":"17:59","springs":[{"LATITUDE":51.925,"LONGITUDE":-177.16,"NAME":"Fumaroles on Kanaga Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":219,"CELSIUS":104},{"LATITUDE":52.042,"LONGITUDE":-176.108,"NAME":"Hot Springs on Great Sitkin Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":210,"CELSIUS":99},{"LATITUDE":51.81,"LONGITUDE":-177.79,"NAME":"Hot Spring on Tanaga Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":null,"CELSIUS":null},{"LATITUDE":51.97,"LONGITUDE":-176.61,"NAME":"Hot Springs on Adak Island","AREA":"Adak","TYPE":"Hotspring","FARENHEIT":154,"CELSIUS":68}],
-"SYSUSERID":"sasjsuser",
-"MF_GETUSER":"SASjs User",
-"_DEBUG":"",
-"_PROGRAM":"/Public/app/minimal-seed-app/services/common/getdata",
-"SYSCC":"0",
-"SYSERRORTEXT":"","SYSHOSTINFOLONG":"","SYSHOSTNAME":"sas",
-"SYSPROCESSID":"41DD607F9C7200B90000000000000000",
-"SYSPROCESSMODE":"Stored Program","SYSPROCESSNAME":"",
-"SYSJOBID":"542908",
-"SYSSCPL":"LINUX","SYSSITE":"0",
-"SYSTCPIPHOSTNAME":"https://sasjs.com",
-"SYSVLONG":"",
-"SYSWARNINGTEXT":"",
-"END_DTTM":"2022-06-21T17:59:14.515731",
-"AUTOEXEC":"","MEMSIZE":"0KB"}
-`,
-  `
-{"SYSDATE":"29JUN22","SYSTIME":"18:25","springs":[{"LATITUDE":53.207,"LONGITUDE":-168.445,"NAME":"Hot Springs Near Geyser Bight","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":null,"CELSIUS":null},{"LATITUDE":53.892,"LONGITUDE":-166.93,"NAME":"Makushin Volcano Fumaroles","AREA":"Unalaska","TYPE":"Hotspring","FARENHEIT":310,"CELSIUS":154 },{"LATITUDE":54.9,"LONGITUDE":-162.885,"NAME":"Hot Spring on Amagat Island","AREA":"False Pass" ,"TYPE":"Hotspring","FARENHEIT":null,"CELSIUS":null},{"LATITUDE":53.213,"LONGITUDE":-168.463,"NAME":"Hot Springs Near Geyser Bight","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":216,"CELSIUS":102},{"LATITUDE":53.223,"LONGITUDE":-168.477,"NAME":"Hot Springs Near Geyser Bight","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":214,"CELSIUS":101},{"LATITUDE":53.443,"LONGITUDE":-168.092,"NAME":"Thermal Springs In Okmok Caldera","AREA":"Umnak","TYPE":"Hotspring","FARENHEIT":212,"CELSIUS":100}],
-"SYSUSERID":"sasjsuser",
-"MF_GETUSER":"SASjs User",
-"_DEBUG":"",
-"_PROGRAM":"/Public/app/minimal-seed-app/services/common/getdata.sas",
-"SYSCC":"1012",
-"SYSERRORTEXT":"File WORK.AREAS.DATA does not exist.",
-"SYSHOSTINFOLONG":"",
-"SYSHOSTNAME":"https://sasjs.com",
-"SYSPROCESSID":"41DD63242C44ED914018000000000000",
-"SYSPROCESSMODE":"SAS Batch Mode",
-"SYSPROCESSNAME":"",
-"SYSJOBID":"24184",
-"SYSSCPL":"WINDOWS",
-"SYSSITE":"0",
-"SYSTCPIPHOSTNAME":"https://sasjs.com",
-"SYSVLONG":"",
-"SYSWARNINGTEXT":"",
-"END_DTTM":"2022-06-29T18:25:55.407000",
-"AUTOEXEC":"",
-"MEMSIZE":"2GB"}
-`,
-  `
-{"SYSDATE":"28JUN22","SYSTIME":"10:46","springs":[{"LATITUDE":44.299,"LONGITUDE":-110.517,"NAME":"Heart Lake Geyser Basin,Middle Gr","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":174,"CELSIUS":79},{"LATITUDE":44.671,"LONGITUDE":-110.29,"NAME":"Ponuntpa Springs Group","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":180,"CELSIUS":82},{"LATITUDE":44.244,"LONGITUDE":-111.022,"NAME":"Boundary Creek Hot Springs","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":181,"CELSIUS":83},{"LATITUDE":44.414,"LONGITUDE":-110.817,"NAME":"Lone Star Geyser Basin,Footbridge","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":183,"CELSIUS":84},{"LATITUDE":44.722,"LONGITUDE":-110.701,"NAME":"Echinus Geyser","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":185,"CELSIUS":85},{"LATITUDE":44.461,"LONGITUDE":-110.854,"NAME":"Emerald Pool","AREA":"Ashton","TYPE":"Hotspring","FARENHEIT":158,"CELSIUS":70}],
-"SYSUSERID":"sasjsuser",
-"MF_GETUSER":"SASjs User",
-"_DEBUG":"",
-"_PROGRAM":"/Public/app/minimal-seed-app/services/common/getdata.sas",
-"SYSCC":"1012",
-"SYSERRORTEXT":"File WORK.AREAS.DATA does not exist.",
-"SYSHOSTINFOLONG":"",
-"SYSHOSTNAME":"https://sasjs.com",
-"SYSPROCESSID":"41DD635DA00D1EB84018000000000000",
-"SYSPROCESSMODE":"SAS Batch Mode",
-"SYSPROCESSNAME":"",
-"SYSJOBID":"14684",
-"SYSSCPL":"WINDOWS",
-"SYSSITE":"0",
-"SYSTCPIPHOSTNAME":"https://sasjs.com",
-"SYSVLONG":"",
-"SYSWARNINGTEXT":"",
-"END_DTTM":"2022-06-28T10:46:29.056000",
-"AUTOEXEC":"",
-"MEMSIZE":"2GB"}
-`
-]
+/* Minimal Seed App mock: services/common/getdata
+ *
+ * The JavaScript twin of getdata.sas, for the builds and deployments that run
+ * without SAS. `areas` arrives as an uploaded table (the adapter sends an array
+ * of rows as CSV, exactly as it does for the SAS service, where %webout(FETCH)
+ * builds work.areas from it), and the answer is the matching rows of the seeded
+ * dataset as `springs`.
+ *
+ * The rows come from springs.json beside this file; scripts/springs-data.js
+ * generates it from the datalines in sasjs/utils/serviceinit.sas, so the mock
+ * cannot answer with a dataset the SAS backend does not have.
+ */
 
-_webout = responses[Math.floor(Math.random() * responses.length)]
+const path = require('path')
+
+/* The app location, as src/index.html sends it and the mock target in
+ * sasjsconfig.json deploys to. */
+const APP_LOC = '/Public/app/minimal-seed-app'
+
+const DRIVE_FILES = path.resolve(weboutPath, '..', '..', '..', 'drive', 'files')
+const SPRINGS_FILE = path.join(
+  DRIVE_FILES,
+  APP_LOC,
+  'services',
+  'common',
+  'springs.json'
+)
+
+/* An uploaded table, by name. The host binds one set of _WEBIN_ vars per file:
+ * _WEBIN_NAME<n> is the table name, _WEBIN_FILEREF<n> its contents - a string
+ * in the browser host, a Buffer on sasjs/server - so both are read as text. */
+const getTable = (name) => {
+  if (typeof _WEBIN_FILE_COUNT === 'undefined') return ''
+
+  for (let i = 1; i <= _WEBIN_FILE_COUNT; i++) {
+    /* direct eval: the _WEBIN_ vars are module-scope consts of the generated
+     * program, not properties of globalThis */
+    const tableName = eval(
+      `typeof _WEBIN_NAME${i} === 'undefined' ? '' : _WEBIN_NAME${i}`
+    )
+    if (tableName !== name) continue
+
+    return String(eval(`_WEBIN_FILEREF${i}`))
+  }
+
+  return ''
+}
+
+/* The adapter's table CSV: a header of `name:format.` entries separated by
+ * spaces, then one comma separated record per row, values quoted only when they
+ * contain a separator or a quote (see convertToCsv in @sasjs/adapter). */
+const parseCsv = (csv) => {
+  const lines = String(csv || '')
+    .split(/\r?\n/)
+    .filter((line) => line !== '')
+
+  if (lines.length < 2) return []
+
+  const columns = lines[0]
+    .trim()
+    .split(/\s+/)
+    .map((header) => header.replace(/:.*$/, '').toUpperCase())
+
+  return lines.slice(1).map((line) => {
+    const values = []
+    let value = ''
+    let quoted = false
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i]
+
+      if (quoted) {
+        if (char === '"' && line[i + 1] === '"') {
+          value += '"'
+          i++
+        } else if (char === '"') {
+          quoted = false
+        } else {
+          value += char
+        }
+      } else if (char === '"') {
+        quoted = true
+      } else if (char === ',') {
+        values.push(value)
+        value = ''
+      } else {
+        value += char
+      }
+    }
+
+    values.push(value)
+
+    const row = {}
+    columns.forEach((column, index) => {
+      row[column] = values[index] === undefined ? '' : values[index]
+    })
+
+    return row
+  })
+}
+
+const wanted = new Set(
+  parseCsv(getTable('areas')).map((row) => String(row.AREA).trim())
+)
+
+const springs = JSON.parse(fs.readFileSync(SPRINGS_FILE, 'utf-8'))
+
+/* proc sql; create table springs as select * from mydb.springs
+ *   where area in (select area from work.areas); - dataset order, no sort. */
+const rows = springs.filter((row) => wanted.has(row.AREA))
+
+webout('OPEN')
+webout('OBJ', 'springs', rows)
+webout('CLOSE')

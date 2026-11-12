@@ -188,7 +188,7 @@ function createRows(dataRows) {
   return rows
 }
 
-window.onload = function () {
+function startApp() {
   const sasjsElement = document.querySelector('sasjs')
   const useComputeApi = sasjsElement.getAttribute('useComputeApi')
 
@@ -219,3 +219,15 @@ window.onload = function () {
       console.error(err)
     })
 }
+
+/* Start once the page is parsed, whether this script runs as the document is
+   still loading or after it has been parsed. The second case is real: a mock
+   build replays the page's scripts once the browser host is ready, which is
+   after the load event - and a `window.onload` handler assigned that late
+   never runs. */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp)
+} else {
+  startApp()
+}
+
