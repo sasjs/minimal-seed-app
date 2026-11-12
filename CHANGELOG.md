@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/sasjs/minimal-seed-app/compare/v1.4.0...v1.4.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* do not render the login form before the session is known ([2194189](https://github.com/sasjs/minimal-seed-app/commit/2194189e07215294a792b8dd1e9211f9d5d25afd))
+
 # [1.4.0](https://github.com/sasjs/minimal-seed-app/compare/v1.3.2...v1.4.0) (2026-11-12)
 
 
