@@ -12,6 +12,13 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # semantic-release writes the tag, the release, the version bump and the
+    # CHANGELOG to the repository, and announces the release on any issue or
+    # pull request it closes - so the workflow's own token needs those scopes
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
 
     strategy:
       matrix:
@@ -98,9 +105,22 @@ jobs:
           cp ./sasjsbuild/server.json.zip ./artefacts/server.json.zip
 
       # semantic-release is a devDependency, so the version that runs is the one
-      # in package-lock.json rather than whatever the registry served today
+      # in package-lock.json rather than whatever the registry served today.
+      #
+      # The token is the workflow's own, not a stored PAT: the PAT this used to
+      # read had expired (EINVALIDGHTOKEN on every run since 2 October), and a
+      # secret that has to be rotated by hand is a release that stops working
+      # silently when nobody does. Both names are set because
+      # @semantic-release/github reads GH_TOKEN first and falls back to
+      # GITHUB_TOKEN, and the git push behind the version bump uses the
+      # credentials actions/checkout persisted (contents: write, above).
+      #
+      # What this gives up: a release created with the workflow token does not
+      # itself trigger other workflows. Nothing here depends on that - the site
+      # is published from the merge push, not from the release event.
       - name: Release
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
