@@ -48,51 +48,66 @@ const getTable = (name) => {
 
 /* The adapter's table CSV: a header of `name:format.` entries separated by
  * spaces, then one comma separated record per row, values quoted only when they
- * contain a separator or a quote (see convertToCsv in @sasjs/adapter). */
+ * contain a separator or a quote (see convertToCsv in @sasjs/adapter). A quoted
+ * value may hold a line break - the adapter leaves an embedded newline in the
+ * cell - so a record ends at a line break that arrives OUTSIDE quotes, not at
+ * every line break: splitting on lines first would tear that row in two. */
 const parseCsv = (csv) => {
-  const lines = String(csv || '')
-    .split(/\r?\n/)
-    .filter((line) => line !== '')
+  const records = []
+  let values = []
+  let value = ''
+  let quoted = false
 
-  if (lines.length < 2) return []
+  const endRecord = () => {
+    values.push(value)
+    records.push(values)
+    values = []
+    value = ''
+  }
 
-  const columns = lines[0]
+  const text = String(csv || '')
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+
+    if (quoted) {
+      if (char === '"' && text[i + 1] === '"') {
+        value += '"'
+        i++
+      } else if (char === '"') {
+        quoted = false
+      } else {
+        value += char
+      }
+    } else if (char === '"') {
+      quoted = true
+    } else if (char === ',') {
+      values.push(value)
+      value = ''
+    } else if (char === '\r' || char === '\n') {
+      /* CRLF ends one record, not two */
+      if (char === '\r' && text[i + 1] === '\n') i++
+      if (values.length || value !== '') endRecord()
+    } else {
+      value += char
+    }
+  }
+
+  if (values.length || value !== '') endRecord()
+
+  if (records.length < 2) return []
+
+  const columns = records[0]
+    .join(' ')
     .trim()
     .split(/\s+/)
     .map((header) => header.replace(/:.*$/, '').toUpperCase())
 
-  return lines.slice(1).map((line) => {
-    const values = []
-    let value = ''
-    let quoted = false
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i]
-
-      if (quoted) {
-        if (char === '"' && line[i + 1] === '"') {
-          value += '"'
-          i++
-        } else if (char === '"') {
-          quoted = false
-        } else {
-          value += char
-        }
-      } else if (char === '"') {
-        quoted = true
-      } else if (char === ',') {
-        values.push(value)
-        value = ''
-      } else {
-        value += char
-      }
-    }
-
-    values.push(value)
-
+  return records.slice(1).map((record) => {
     const row = {}
+
     columns.forEach((column, index) => {
-      row[column] = values[index] === undefined ? '' : values[index]
+      row[column] = record[index] === undefined ? '' : record[index]
     })
 
     return row

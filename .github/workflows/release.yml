@@ -35,6 +35,22 @@ jobs:
         env:
           CI: true
 
+      # the page ships the committed adapter bundle, so a copy that has fallen
+      # behind the pinned adapter is caught here rather than in a browser
+      - name: Check the adapter bundle is current
+        run: npm run check:bundle
+
+      # what the app ships must have no advisories at all
+      - name: Audit the dependencies that ship
+        run: npm audit --omit=dev
+
+      # and the dev toolchain must have nothing high or critical. The moderates
+      # that remain are inside the npm 11 that @semantic-release/npm bundles -
+      # they cannot be overridden from here, and they run only on this runner
+      # during a release.
+      - name: Audit for high or critical advisories
+        run: npm audit --audit-level=high
+
       # the JS services answer from springs.json, which is generated from the
       # datalines in sasjs/utils/serviceinit.sas - fail here if they have drifted
       - name: Check the mock dataset is in step with the SAS one
@@ -78,10 +94,10 @@ jobs:
           npx sasjs cb -t server
           cp ./sasjsbuild/server.json.zip ./artefacts/server.json.zip
 
-      - name: Install Semantic Release and plugins
-        run: |
-          npm i -g semantic-release
+      # semantic-release is a devDependency, so the version that runs is the one
+      # in package-lock.json rather than whatever the registry served today
       - name: Release
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          GITHUB_TOKEN=${{ secrets.GH_TOKEN }} semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release
