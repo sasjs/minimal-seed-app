@@ -55,7 +55,8 @@ function showLogin() {
   const loginButton = document.getElementById('login')
   loginForm.style.display = 'flex'
   loginButton.style.display = 'inline-block'
-  loginButton.addEventListener('click', login)
+  // loginRequired() replaces this with a handler that settles its own promise
+  loginButton.onclick = () => login()
 
   const dataContainer = document.getElementById('data-container')
   dataContainer.classList.add('hidden')

@@ -37,11 +37,13 @@
     <h1>
       Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
     </h1>
-    <div class="login-form" id="login-form">
+    <!-- the login form is not this page's default state: checkSession() has not
+         answered yet, so the page must not claim the visitor is logged out -->
+    <div class="login-form hidden" id="login-form">
       <input type="text" id="username" placeholder="Enter username" />
       <input type="password" id="password" placeholder="Enter password" />
     </div>
-    <button id="login">Log in</button>
+    <button id="login" class="hidden">Log in</button>
     <div id="data-container" class="hidden"></div>
     <div id="logout-container" class="hidden"></div>
   </body>
