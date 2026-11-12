@@ -34,6 +34,18 @@ body,
   color: #f79205;
 }
 
+/* the one link on the page: the heading that names the app points at its
+   source, in the heading's own colour with the accent underline */
+h1 a {
+  color: inherit;
+  text-decoration-color: #f79205;
+  text-underline-offset: 0.2em;
+}
+
+h1 a:hover {
+  text-decoration-thickness: 3px;
+}
+
 button {
   background-color: #3f51b5;
   color: #ffffff;
