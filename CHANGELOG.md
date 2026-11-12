@@ -1,3 +1,20 @@
+# [1.4.0](https://github.com/sasjs/minimal-seed-app/compare/v1.3.2...v1.4.0) (2026-11-12)
+
+
+### Bug Fixes
+
+* **audit:** refuse a report that judged nothing, and match exemptions on location ([22fcde1](https://github.com/sasjs/minimal-seed-app/commit/22fcde1840380c3395584634cff88bc7c05108b2)), closes [#29](https://github.com/sasjs/minimal-seed-app/issues/29)
+* **audit:** refuse a report whose counts and entries disagree ([4602ed1](https://github.com/sasjs/minimal-seed-app/commit/4602ed1a80ab5ce247b47c451d3ebbd2c001b205)), closes [#30](https://github.com/sasjs/minimal-seed-app/issues/30)
+* **ci:** release with the workflow's own token, not a PAT that expires ([3ae4c9b](https://github.com/sasjs/minimal-seed-app/commit/3ae4c9b86c5fcf2e05de88c64aeb036e08ca78fc))
+* **deps:** bump @sasjs/adapter to 4.19.1, @sasjs/cli to 4.20.4, @sasjs/core to 5.2.10 ([2e88f3a](https://github.com/sasjs/minimal-seed-app/commit/2e88f3a8c0cce765f2d26cfc81848bf9a6706c9f)), closes [#898](https://github.com/sasjs/minimal-seed-app/issues/898)
+* **mock:** answer the review - table parsing, a bundle gate, and an audit gate ([ac53030](https://github.com/sasjs/minimal-seed-app/commit/ac530305b30c49f7b61b67aa13e9e4f170a1e1bb)), closes [hi#or-critical](https://github.com/hi/issues/or-critical)
+* **mock:** generate the fixture, take the app location from _program, and make the gates bite ([90faa36](https://github.com/sasjs/minimal-seed-app/commit/90faa364175f49d28a86899c57b07be1fed6cf65))
+
+
+### Features
+
+* **mock:** build the app as a static site whose backend runs in the browser ([1050ff6](https://github.com/sasjs/minimal-seed-app/commit/1050ff6a7033e719e5ad872d0b1df6a2615931ac))
+
 ## [1.3.2](https://github.com/sasjs/minimal-seed-app/compare/v1.3.1...v1.3.2) (2026-05-07)
 
 
