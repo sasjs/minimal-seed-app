@@ -29,6 +29,19 @@ if (!fs.existsSync(path.join(SITE, 'sw.js'))) {
   fail(`${SITE} is not a mock build - run: npm run mock:build`)
 }
 
+/* The login form must not be the rendered default. checkSession() has not
+ * answered when the page paints, so a form in the markup is a credentials
+ * prompt a visitor sees before the app knows whether there is a session - on
+ * this host there is no login wall at all, so it asks a question with no
+ * answer. The page reveals the form from showLogin(), not from its markup. */
+const page = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8')
+
+for (const id of ['login-form', 'login']) {
+  const tag = (page.match(new RegExp(`<[a-z]+[^>]*id="${id}"[^>]*>`)) || [''])[0]
+
+  if (!/\bhidden\b/.test(tag)) fail(`#${id} is shown before a session check`)
+}
+
 /* The worker registers its fetch listener on `self`, and imports its runtime
  * from the site. Both are stubbed here the way a browser provides them. */
 const handlers = { fetch: [], message: [], install: [], activate: [] }
