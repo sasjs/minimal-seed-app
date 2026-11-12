@@ -103,6 +103,10 @@ const wanted = new Set(
   parseCsv(getTable('areas')).map((row) => String(row.AREA).trim())
 )
 
+/* With no `areas` table the answer is no rows. The SAS service would fail here
+ * instead - %webout(FETCH) creates work.areas, and the PROC SQL that follows
+ * errors when it was never sent - but an empty answer keeps a demo usable and
+ * is what the page draws: no table, no rows. */
 const springs = JSON.parse(fs.readFileSync(SPRINGS_FILE, 'utf-8'))
 
 /* proc sql; create table springs as select * from mydb.springs
