@@ -5,6 +5,11 @@ name: Publish the mocked site
 # The `mock` target builds the app as a static site whose backend runs in the
 # browser. Publishing it means the seed app can be looked at - and used - without
 # a SAS licence, a server, or a checkout: https://minimal.sasjs.io
+#
+# One-time repository setting, which a workflow cannot make for itself:
+# Settings -> Pages -> Build and deployment -> Source: GitHub Actions, and the
+# custom domain minimal.sasjs.io. Until that is set the deploy job is where it
+# fails, naming this - the build job is unaffected.
 
 on:
   push:
@@ -52,8 +57,6 @@ jobs:
           printf 'minimal.sasjs.io\n' > sasjsbuild/mock/CNAME
           touch sasjsbuild/mock/.nojekyll
 
-      - uses: actions/configure-pages@v5
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: sasjsbuild/mock
@@ -67,5 +70,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # configure-pages validates the Pages site; against a repository with
+      # Pages switched off it fails here, which is the instruction above
+      - uses: actions/configure-pages@v5
+
       - id: deployment
         uses: actions/deploy-pages@v4
