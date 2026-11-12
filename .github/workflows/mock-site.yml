@@ -20,10 +20,10 @@ on:
       - main
   workflow_dispatch:
 
+# the build job runs on every pull request, so it carries no Pages or OIDC
+# permission: only the deploy job, which runs from main, holds those
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # one publish at a time, and never cancel one that is half-deployed
 concurrency:
@@ -46,6 +46,8 @@ jobs:
 
       - run: npm run check:bundle
 
+      - run: npm run test:unit
+
       - run: |
           npm run mock:build
           npm run test:mock
@@ -66,6 +68,9 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -8,22 +8,21 @@
  * in the seeded dataset, as `areas` - so the app renders its dropdown and the
  * screens that follow it without a SAS engine.
  *
- * The rows are one source, not two: sasjs/utils/serviceinit.sas builds
- * mydb.springs from in-stream datalines, and scripts/springs-data.js writes the
- * same rows to springs.json beside this file. Change the dataset there and run
- * that script.
+ * The rows come from springs.json beside this file, which scripts/springs-data.js
+ * generates from the dataset's model - the same seven columns, the same ranges,
+ * the same nullable temperatures - with a fixed seed, so the fixture is
+ * reproducible rather than random. The SAS service reads mydb.springs; the two
+ * agree in shape, not in values, which is what a mock is for.
  */
 
 const path = require('path')
 
-/* The app location, as src/index.html sends it and the mock target in
- * sasjsconfig.json deploys to: the drive path below is that folder. */
-const APP_LOC = '/Public/app/minimal-seed-app'
-
 /* weboutPath is <root>/sessions/s<n>/webout.txt and the drive sits beside the
  * sessions folder - the layout sasjs/server uses, which the browser host
- * mirrors. */
+ * mirrors. The program's own path names the application folder:
+ * /Public/app/minimal-seed-app/services/common/appinit. */
 const DRIVE_FILES = path.resolve(weboutPath, '..', '..', '..', 'drive', 'files')
+const APP_LOC = String(_program).replace(/\/(services|jobs|tests)\/.*$/, '')
 const SPRINGS_FILE = path.join(
   DRIVE_FILES,
   APP_LOC,

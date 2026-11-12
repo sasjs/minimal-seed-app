@@ -16,7 +16,9 @@
     "mock:start": "npx http-server ./sasjsbuild/mock -p 3001",
     "check:data": "node scripts/springs-data.js --check",
     "test:mock": "node scripts/check-mock-site.js",
-    "check:bundle": "node scripts/adapter-bundle.js --check"
+    "check:bundle": "node scripts/adapter-bundle.js --check",
+    "test:unit": "node --test scripts/getdata-parser.test.js scripts/audit-gate.test.js",
+    "audit:gate": "node scripts/audit-gate.js"
   },
   "keywords": [
     "SAS",

@@ -6,18 +6,18 @@
  * builds work.areas from it), and the answer is the matching rows of the seeded
  * dataset as `springs`.
  *
- * The rows come from springs.json beside this file; scripts/springs-data.js
- * generates it from the datalines in sasjs/utils/serviceinit.sas, so the mock
- * cannot answer with a dataset the SAS backend does not have.
+ * The rows come from springs.json beside this file, which scripts/springs-data.js
+ * generates from the dataset's model with a fixed seed - reproducible, and not
+ * a copy of the SAS dataset's rows. Change the model there and run that script.
  */
 
 const path = require('path')
 
-/* The app location, as src/index.html sends it and the mock target in
- * sasjsconfig.json deploys to. */
-const APP_LOC = '/Public/app/minimal-seed-app'
-
+/* weboutPath is <root>/sessions/s<n>/webout.txt and the drive sits beside the
+ * sessions folder - the layout sasjs/server uses, which the browser host
+ * mirrors. The program's own path names the application folder. */
 const DRIVE_FILES = path.resolve(weboutPath, '..', '..', '..', 'drive', 'files')
+const APP_LOC = String(_program).replace(/\/(services|jobs|tests)\/.*$/, '')
 const SPRINGS_FILE = path.join(
   DRIVE_FILES,
   APP_LOC,

@@ -101,11 +101,16 @@ from JavaScript services that mirror the SAS ones:
 -   `sasjs/mocks/services/common/getdata.js` returns the springs for the chosen areas
 -   `sasjs/mocks/services/common/springs.json` holds the rows themselves
 
-`springs.json` is generated from the datalines in
-`sasjs/utils/serviceinit.sas`, so the mock and the SAS backend answer from one
-dataset rather than two copies that drift. After changing the dataset run
-`node scripts/springs-data.js`; `npm run check:data` fails when the two
-disagree.
+`springs.json` is a generated fixture, not a copy of the SAS dataset:
+`scripts/springs-data.js` writes it from the dataset's model - the same seven
+columns, the same value ranges, the same nullable temperatures - with a fixed
+seed, so the file is reproducible rather than random and the mock answers the
+same rows on every build. The SAS services read `mydb.springs`, so the two
+agree in shape, not in values.
+
+Change the model in that script and run `node scripts/springs-data.js`;
+`npm run check:data` fails when the committed file is not what the script
+produces, so the fixture cannot drift from its generator.
 
 The same JS services are what `sasjs cb -t server` ships for the `server`
 target, which is why a deployment to sasjs/server also answers without SAS.

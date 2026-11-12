@@ -44,16 +44,19 @@ jobs:
       - name: Audit the dependencies that ship
         run: npm audit --omit=dev
 
-      # and the dev toolchain must have nothing high or critical. The moderates
-      # that remain are inside the npm 11 that @semantic-release/npm bundles -
-      # they cannot be overridden from here, and they run only on this runner
-      # during a release.
-      - name: Audit for high or critical advisories
-        run: npm audit --audit-level=high
+      # and nothing high or critical anywhere, nor any advisory outside the
+      # npm-bundled set this repository cannot patch - see scripts/audit-gate.js
+      - name: Audit the dev toolchain
+        run: npm run audit:gate
 
-      # the JS services answer from springs.json, which is generated from the
-      # datalines in sasjs/utils/serviceinit.sas - fail here if they have drifted
-      - name: Check the mock dataset is in step with the SAS one
+      # the guards' own tests: the table parser's shapes, and the audit gate
+      # biting on the reports it exists for
+      - name: Unit tests
+        run: npm run test:unit
+
+      # the JS services answer from springs.json, generated deterministically
+      # by scripts/springs-data.js - fail here if the committed file has drifted
+      - name: Check the mock dataset is reproducible
         run: npm run check:data
 
       # the mocked build is a static site whose backend runs in the browser.

@@ -1,25 +1,27 @@
 #!/usr/bin/env node
 /*
- * Generates `sasjs/mocks/services/common/springs.json` from the seeded
- * dataset in `sasjs/utils/serviceinit.sas`.
+ * Writes `sasjs/mocks/services/common/springs.json` - the dataset the JS mock
+ * services answer from.
  *
- * The SAS services read `mydb.springs`, which `serviceinit.sas` builds from an
- * in-stream datalines block. A mocked build has no SAS, so the JS mock
- * services need the same rows as data. Keeping one source of truth means the
- * mock cannot quietly answer with a dataset the real backend does not have:
- * this script reads the datalines, and `--check` fails when the committed JSON
- * and the SAS differ (the guarded path CI runs).
+ * The rows are GENERATED, not copied: `sashelp.springs` ships with SAS, and a
+ * repository that carries its rows is carrying SAS's data. What is taken from
+ * the real dataset is its model - the seven columns, their types, the ranges
+ * the values sit in, and the facts that a spring may have no temperature and
+ * that Celsius follows Fahrenheit.
+ *
+ * Generation is seeded, so the file is a fixture rather than a moving target:
+ * the same script produces the same bytes, which is what `--check` asserts in
+ * CI. Change the seed or the model and the committed file follows.
  *
  * Usage:
  *   node scripts/springs-data.js          # write the JSON
- *   node scripts/springs-data.js --check  # fail if it is out of date
+ *   node scripts/springs-data.js --check  # fail if it is not what this produces
  */
 
 const fs = require('fs')
 const path = require('path')
 
 const ROOT = path.resolve(__dirname, '..')
-const SAS_FILE = path.join(ROOT, 'sasjs', 'utils', 'serviceinit.sas')
 const JSON_FILE = path.join(
   ROOT,
   'sasjs',
@@ -29,148 +31,134 @@ const JSON_FILE = path.join(
   'springs.json'
 )
 
-// The dataset's columns, in the order the datalines supply them.
-const COLUMNS = [
-  'LATITUDE',
-  'LONGITUDE',
-  'NAME',
-  'AREA',
-  'TYPE',
-  'FARENHEIT',
-  'CELSIUS'
+/* Any change here changes the dataset; the seed is what makes it stable. */
+const SEED = 20221112
+
+/* Invented place names, so the dropdown reads like a real application without
+ * borrowing the names of the dataset being modelled. */
+const AREAS = [
+  'Alder Basin',
+  'Basalt Ridge',
+  'Bitter Creek',
+  'Cedar Hollow',
+  'Cinder Cone',
+  'Copper Flat',
+  'Ember Valley',
+  'Granite Pass',
+  'Juniper Wells',
+  'Larkspur',
+  'Mica Canyon',
+  'Obsidian Gulch',
+  'Pineglass',
+  'Quarry Bend',
+  'Rattlesnake Draw',
+  'Salt Lick',
+  'Soda Fork',
+  'Steamboat Mesa',
+  'Tamarack Flats',
+  'Willow Tank'
 ]
 
-/**
- * One datalines record. `infile cards dsd` means comma separated with double
- * quotes around values that contain a comma, and `""` as an embedded quote.
- */
-const parseRecord = (line) => {
-  const fields = []
-  let value = ''
-  let quoted = false
+/* The vocabulary a spring's name is built from, by area. */
+const FEATURES = [
+  'Hot Spring',
+  'Warm Spring',
+  'Fumaroles',
+  'Geyser Basin',
+  'Thermal Pool',
+  'Mineral Spring',
+  'Steam Vents',
+  'Mud Pots'
+]
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i]
+const LOCATIONS = [
+  'North Fork',
+  'South Fork',
+  'Upper Bench',
+  'Lower Bench',
+  'East Gulch',
+  'West Gulch',
+  'Middle Creek',
+  'Main Terrace'
+]
 
-    if (quoted) {
-      if (char === '"' && line[i + 1] === '"') {
-        value += '"'
-        i++
-      } else if (char === '"') {
-        quoted = false
-      } else {
-        value += char
-      }
-    } else if (char === '"') {
-      quoted = true
-    } else if (char === ',') {
-      fields.push(value)
-      value = ''
-    } else {
-      value += char
-    }
-  }
-
-  fields.push(value)
-
-  return fields
+/* mulberry32 - a small seeded generator, so the fixture does not depend on the
+ * runtime's Math.random and can be reproduced anywhere. */
+const makeRandom = (seed) => () => {
+  seed |= 0
+  seed = (seed + 0x6d2b79f5) | 0
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
 }
 
-/**
- * A numeric field, or null for a missing value. `serviceinit.sas` declares
- * `missing a b c ... z _`, so a single letter (or `.`) is a special missing and
- * %webout renders it as a JSON null.
- */
-const parseNumber = (text) => {
-  const value = text.trim()
+const between = (random, min, max) => min + random() * (max - min)
+const round = (value, places) => Number(value.toFixed(places))
+const pick = (random, list) => list[Math.floor(random() * list.length)]
 
-  if (value === '' || value === '.') return null
-  if (/^[A-Za-z_]$/.test(value)) return null
+const buildRows = () => {
+  const random = makeRandom(SEED)
+  const rows = []
 
-  const number = Number(value)
-  if (Number.isNaN(number)) {
-    throw new Error(`Not a number in the seeded dataset: "${text}"`)
-  }
+  AREAS.forEach((area) => {
+    /* three to eight springs per area: a dropdown with an empty answer would
+     * exercise a case the app does not draw */
+    const count = 3 + Math.floor(random() * 6)
 
-  return number
-}
+    for (let i = 0; i < count; i++) {
+      const farenheit = 68 + Math.floor(random() * 143)
 
-const readSprings = () => {
-  const source = fs.readFileSync(SAS_FILE, 'utf8')
-  const match = source.match(/datalines4;\r?\n([\s\S]*?)\r?\n;;;;/)
+      /* one in six has no temperature reading, as in the dataset's `missing`
+       * values - both columns go together, in the shape %webout renders */
+      const measured = random() > 0.17
 
-  if (!match) {
-    throw new Error(
-      `No datalines4 block found in ${path.relative(ROOT, SAS_FILE)}`
-    )
-  }
-
-  const rows = match[1]
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== '')
-    .map((line) => {
-      const fields = parseRecord(line)
-
-      if (fields.length !== COLUMNS.length) {
-        throw new Error(
-          `Expected ${COLUMNS.length} fields, found ${fields.length}: ${line}`
-        )
-      }
-
-      const row = {}
-      COLUMNS.forEach((column, index) => {
-        row[column] =
-          column === 'NAME' || column === 'AREA' || column === 'TYPE'
-            ? fields[index]
-            : parseNumber(fields[index])
+      rows.push({
+        LATITUDE: round(between(random, 31, 48), 3),
+        LONGITUDE: round(between(random, -122, -104), 3),
+        NAME: `${area} ${pick(random, LOCATIONS)} ${pick(random, FEATURES)}`,
+        AREA: area,
+        TYPE: 'Hotspring',
+        FARENHEIT: measured ? farenheit : null,
+        CELSIUS: measured ? Math.round(((farenheit - 32) * 5) / 9) : null
       })
-
-      return row
-    })
-
-  if (!rows.length) throw new Error('The seeded dataset is empty')
+    }
+  })
 
   return rows
 }
 
-/**
- * One row per line, so a change to the source dataset reads as a change to the
- * rows it touched rather than as one enormous line.
- */
+/* One row per line, so a change to the generator reads as a change to the rows
+ * it touched rather than as one enormous line. */
 const serialise = (rows) =>
   `[\n${rows.map((row) => `  ${JSON.stringify(row)}`).join(',\n')}\n]\n`
 
 const main = () => {
   const check = process.argv.includes('--check')
-  const expected = serialise(readSprings())
+  const expected = serialise(buildRows())
   const actual = fs.existsSync(JSON_FILE)
     ? fs.readFileSync(JSON_FILE, 'utf8')
     : null
 
-  if (check) {
-    if (actual !== expected) {
-      console.error(
-        `${path.relative(ROOT, JSON_FILE)} is out of date with ` +
-          `${path.relative(ROOT, SAS_FILE)}. Run: node scripts/springs-data.js`
-      )
-      process.exit(1)
-    }
-
+  if (actual === expected) {
     console.log(
-      `${path.relative(ROOT, JSON_FILE)} matches ${path.relative(ROOT, SAS_FILE)}`
+      `${path.relative(ROOT, JSON_FILE)} is what this script produces`
     )
     return
   }
 
-  if (actual !== expected) {
-    fs.writeFileSync(JSON_FILE, expected)
-    console.log(
-      `Wrote ${JSON.parse(expected).length} rows to ` +
-        path.relative(ROOT, JSON_FILE)
+  if (check) {
+    console.error(
+      `${path.relative(ROOT, JSON_FILE)} is not what scripts/springs-data.js ` +
+        'produces. Run: node scripts/springs-data.js'
     )
-  } else {
-    console.log(`${path.relative(ROOT, JSON_FILE)} is already up to date`)
+    process.exit(1)
   }
+
+  fs.writeFileSync(JSON_FILE, expected)
+  console.log(
+    `Wrote ${JSON.parse(expected).length} rows to ` +
+      path.relative(ROOT, JSON_FILE)
+  )
 }
 
 main()
