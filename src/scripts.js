@@ -3,14 +3,22 @@ let sasjs
 function login(resolve, reject) {
   const username = document.getElementById('username').value
   const password = document.getElementById('password').value
-  sasjs.logIn(username, password).then((response) => {
-    if (response.isLoggedIn) {
-      afterLogin(!resolve)
+
+  const failed = () => {
+    document.getElementById('login-error').hidden = false
+    if (reject) reject()
+  }
+
+  sasjs
+    .logIn(username, password)
+    .then((response) => {
+      if (!response.isLoggedIn) return failed()
+
+      document.getElementById('login-error').hidden = true
+      afterLogin()
       if (resolve) resolve()
-    } else {
-      if (reject) reject()
-    }
-  })
+    })
+    .catch(failed)
 }
 
 function logout() {
@@ -18,52 +26,29 @@ function logout() {
   showLogin()
 }
 
-function afterLogin(insertStartUpButton = true) {
-  const loginForm = document.getElementById('login-form')
-  const loginButton = document.getElementById('login')
-  loginForm.style.display = 'none'
-  loginButton.style.display = 'none'
-
-  const dataContainer = document.getElementById('data-container')
-  dataContainer.classList.remove('hidden')
-
-  /* once only: logging out and back in runs this again, and the button already
-     appended is still in the container */
-  if (insertStartUpButton && !document.getElementById('load-startup-data')) {
-    const loadStartupDataButton = document.createElement('button')
-    loadStartupDataButton.id = 'load-startup-data'
-    loadStartupDataButton.innerText = 'Load Startup Data'
-    loadStartupDataButton.onclick = loadStartupData
-
-    dataContainer.appendChild(loadStartupDataButton)
-  }
-
-  const logoutContainer = document.getElementById('logout-container')
-  logoutContainer.classList.remove('hidden')
-
-  let logoutButton = document.getElementById('logout')
-  if (!logoutButton) {
-    logoutButton = document.createElement('button')
-    logoutButton.id = 'logout'
-    logoutButton.innerText = 'Logout'
-    logoutButton.onclick = logout
-
-    logoutContainer.appendChild(logoutButton)
-  }
+function afterLogin() {
+  document.getElementById('login-form').hidden = true
+  document.getElementById('data-container').hidden = false
+  document.getElementById('logout-container').hidden = false
 }
 
 function showLogin() {
   const loginForm = document.getElementById('login-form')
-  const loginButton = document.getElementById('login')
-  loginForm.style.display = 'flex'
-  loginButton.style.display = 'inline-block'
-  // loginRequired() replaces this with a handler that settles its own promise
-  loginButton.onclick = () => login()
+  const loginError = document.getElementById('login-error')
 
-  const dataContainer = document.getElementById('data-container')
-  dataContainer.classList.add('hidden')
-  const logoutContainer = document.getElementById('logout-container')
-  logoutContainer.classList.add('hidden')
+  loginForm.hidden = false
+  loginError.hidden = true
+  loginForm.onsubmit = (event) => {
+    event.preventDefault()
+    login()
+  }
+
+  /* whatever the previous session loaded goes with it, and the app starts
+     again from its one button rather than from a table nobody asked for */
+  document.getElementById('results').replaceChildren()
+  document.getElementById('load-startup-data').hidden = false
+  document.getElementById('data-container').hidden = true
+  document.getElementById('logout-container').hidden = true
 }
 
 async function loginRequired() {
@@ -72,8 +57,8 @@ async function loginRequired() {
 
   return new Promise((resolve, reject) => {
     showLogin()
-    const loginButton = document.getElementById('login')
-    loginButton.onclick = () => {
+    document.getElementById('login-form').onsubmit = (event) => {
+      event.preventDefault()
       login(resolve, reject)
     }
   })
@@ -84,32 +69,22 @@ function loadStartupData() {
 
   sasjs
     .request('services/common/appinit', null, undefined, loginRequired)
-    .then((response) => {
-      let responseJson
-      try {
-        responseJson = response
-      } catch (e) {
-        console.error(e)
-      }
-      if (responseJson && responseJson.status === 449) {
-        loadStartupData()
-      } else {
-        if (responseJson && responseJson.areas) {
-          const loadStartupDataButton =
-            document.getElementById('load-startup-data')
-          loadStartupDataButton.style.display = 'none'
-          createAreasDropdown(responseJson.areas)
-        }
-      }
+    .then((responseJson) => {
+      if (!responseJson) return
+      if (responseJson.status === 449) return loadStartupData()
+      if (!responseJson.areas) return
+
+      document.getElementById('load-startup-data').hidden = true
+      createAreasDropdown(responseJson.areas)
     })
-    .catch((err) => {
-      console.error(err)
-    })
+    .catch((err) => console.error(err))
 }
 
 function loadData() {
   const areasDropdown = document.getElementById('areas-dropdown')
-  const selectedArea = areasDropdown.options[areasDropdown.selectedIndex].value
+  const selectedArea =
+    areasDropdown.options[areasDropdown.selectedIndex].value
+
   sasjs
     .request(
       'services/common/getdata',
@@ -117,29 +92,17 @@ function loadData() {
       undefined,
       loginRequired
     )
-    .then((response) => {
-      const responseJson = response
-      if (responseJson && responseJson.springs && responseJson.springs) {
-        const existingTable = document.getElementById('springs-table')
-        const dataContainer = document.getElementById('data-container')
-        if (existingTable) {
-          dataContainer.removeChild(existingTable)
-        }
-        const table = document.createElement('table')
-        table.id = 'springs-table'
-        const tableHeader = createTableHeader()
-        table.appendChild(tableHeader)
-        const tableRows = createRows(responseJson.springs)
-        const tableBody = document.createElement('tbody')
-        table.appendChild(tableBody)
-        tableRows.forEach((row) => tableBody.appendChild(row))
-        dataContainer.appendChild(table)
+    .then((responseJson) => {
+      if (responseJson && responseJson.springs) {
+        renderTable(responseJson.springs)
       }
     })
+    .catch((err) => console.error(err))
 }
 
 function createAreasDropdown(areas) {
-  const dataContainer = document.getElementById('data-container')
+  const results = document.getElementById('results')
+
   const areasDropDown = document.createElement('select')
   areasDropDown.id = 'areas-dropdown'
   areas.forEach((area) => {
@@ -148,11 +111,29 @@ function createAreasDropdown(areas) {
     option.text = area['AREA']
     areasDropDown.options.add(option)
   })
-  dataContainer.appendChild(areasDropDown)
+  results.appendChild(areasDropDown)
+
   const submitButton = document.createElement('button')
-  submitButton.onclick = loadData
+  submitButton.id = 'load-data'
   submitButton.innerText = 'Submit'
-  dataContainer.appendChild(submitButton)
+  submitButton.onclick = loadData
+  results.appendChild(submitButton)
+}
+
+function renderTable(dataRows) {
+  const results = document.getElementById('results')
+  const existingTable = document.getElementById('springs-table')
+  if (existingTable) results.removeChild(existingTable)
+
+  const table = document.createElement('table')
+  table.id = 'springs-table'
+  table.appendChild(createTableHeader())
+
+  const tableBody = document.createElement('tbody')
+  createRows(dataRows).forEach((row) => tableBody.appendChild(row))
+  table.appendChild(tableBody)
+
+  results.appendChild(table)
 }
 
 function createTableHeader() {
@@ -181,7 +162,7 @@ function createRows(dataRows) {
   const rows = []
   dataRows.forEach((dataRow) => {
     const row = document.createElement('tr')
-    for (field in dataRow) {
+    for (const field in dataRow) {
       const cell = document.createElement('td')
       cell.innerText = dataRow[field]
       row.appendChild(cell)
@@ -223,6 +204,9 @@ function startApp() {
     })
 }
 
+document.getElementById('load-startup-data').onclick = loadStartupData
+document.getElementById('logout').onclick = logout
+
 /* Start once the page is parsed, whether this script runs as the document is
    still loading or after it has been parsed. The second case is real: a mock
    build replays the page's scripts once the browser host is ready, which is
@@ -233,4 +217,3 @@ if (document.readyState === 'loading') {
 } else {
   startApp()
 }
-
