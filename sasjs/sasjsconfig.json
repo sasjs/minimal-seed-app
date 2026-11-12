@@ -73,6 +73,18 @@
         "streamServiceName": "minimal-seed-app",
         "assetPaths": []
       }
+    },
+    {
+      "name": "mock",
+      "serverUrl": "",
+      "serverType": "SASJS",
+      "appLoc": "/Public/app/minimal-seed-app",
+      "streamConfig": {
+        "mockWeb": true,
+        "mockWebFolder": "sasjsbuild/mock",
+        "streamWeb": false,
+        "webSourcePath": "src"
+      }
     }
   ]
 }

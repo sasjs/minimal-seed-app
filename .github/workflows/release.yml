@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   release:
@@ -15,41 +19,88 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
+      # npm ci, and the CLI comes from devDependencies: a build that used
+      # whatever `npm i -g @sasjs/cli` resolved could differ from the version
+      # this repo pins and tested.
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         env:
           CI: true
 
-      - name: install sasjs CLI globally
-        run: npm i -g @sasjs/cli
+      # the page ships the committed adapter bundle, so a copy that has fallen
+      # behind the pinned adapter is caught here rather than in a browser
+      - name: Check the adapter bundle is current
+        run: npm run check:bundle
+
+      # what the app ships must have no advisories at all
+      - name: Audit the dependencies that ship
+        run: npm audit --omit=dev
+
+      # and nothing high or critical anywhere, nor any advisory outside the
+      # npm-bundled set this repository cannot patch - see scripts/audit-gate.js
+      - name: Audit the dev toolchain
+        run: npm run audit:gate
+
+      # the guards' own tests: the table parser's shapes, and the audit gate
+      # biting on the reports it exists for
+      - name: Unit tests
+        run: npm run test:unit
+
+      # the JS services answer from springs.json, generated deterministically
+      # by scripts/springs-data.js - fail here if the committed file has drifted
+      - name: Check the mock dataset is reproducible
+        run: npm run check:data
+
+      # the mocked build is a static site whose backend runs in the browser.
+      # Building it on every run means a change to the services or the mock
+      # target that breaks that build fails here, not at the next person who
+      # tries to demo the app.
+      - name: Build the mocked site
+        run: |
+          npm run mock:build
+          test -s sasjsbuild/mock/index.html
+          test -s sasjsbuild/mock/host/vfs-seed.json
+
+      # and prove it answers: the worker is booted from the build output and the
+      # two services the page calls are exercised
+      - name: Check the mocked site answers
+        run: npm run test:mock
+
+      - name: Upload the mocked site
+        uses: actions/upload-artifact@v4
+        with:
+          name: minimal-seed-app-mock
+          path: sasjsbuild/mock/
+          if-no-files-found: error
 
       - name: create SAS 9 EBI build and Add to Release
         run: |
-          sasjs cb -t sas9
-          mkdir ./artefacts
+          npx sasjs cb -t sas9
+          mkdir -p ./artefacts
           cp ./sasjsbuild/mysas9deploy.sas ./artefacts/sas9.sas
 
       - name: create Viya build and Add to Release
         run: |
-          sasjs cb -t viya
+          npx sasjs cb -t viya
           cp ./sasjsbuild/myviyadeploy.sas ./artefacts/viya.sas
 
       - name: create SASjs build and Add to Release
         run: |
-          sasjs cb -t server
+          npx sasjs cb -t server
           cp ./sasjsbuild/server.json.zip ./artefacts/server.json.zip
 
-      - name: Install Semantic Release and plugins
-        run: |
-          npm i
-          npm i -g semantic-release
+      # semantic-release is a devDependency, so the version that runs is the one
+      # in package-lock.json rather than whatever the registry served today
       - name: Release
-        run: |
-          GITHUB_TOKEN=${{ secrets.GH_TOKEN }} semantic-release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release

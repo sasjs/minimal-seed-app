@@ -1,0 +1,83 @@
+# the site is published from main only; a pull request still builds it, so a
+# change that breaks the browser build is red here before it merges
+name: Publish the mocked site
+
+# The `mock` target builds the app as a static site whose backend runs in the
+# browser. Publishing it means the seed app can be looked at - and used - without
+# a SAS licence, a server, or a checkout: https://minimal.sasjs.io
+#
+# One-time repository setting, which a workflow cannot make for itself:
+# Settings -> Pages -> Build and deployment -> Source: GitHub Actions, and the
+# custom domain minimal.sasjs.io. Until that is set the deploy job is where it
+# fails, naming this - the build job is unaffected.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# the build job runs on every pull request, so it carries no Pages or OIDC
+# permission: only the deploy job, which runs from main, holds those
+permissions:
+  contents: read
+
+# one publish at a time, and never cancel one that is half-deployed
+concurrency:
+  group: mock-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the mocked site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run check:bundle
+
+      - run: npm run test:unit
+
+      - run: |
+          npm run mock:build
+          npm run test:mock
+
+      # a custom domain is a file in the published folder: without it Pages
+      # serves the site at github.io/<repo>/ and the DNS record points nowhere
+      - name: Add the custom domain
+        run: |
+          printf 'minimal.sasjs.io\n' > sasjsbuild/mock/CNAME
+          touch sasjsbuild/mock/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sasjsbuild/mock
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # configure-pages validates the Pages site; against a repository with
+      # Pages switched off it fails here, which is the instruction above
+      - uses: actions/configure-pages@v5
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

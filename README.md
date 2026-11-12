@@ -76,6 +76,50 @@ You are done!
 
 You can put the frontend [directly on the SAS Web Server](https://sasjs.io/frontend/deployment/), else you can also use node to spin up a local web server with CORS disabled. To install, submit `npm install http-server -g`. To execute, navigate to the location where the app is to be loaded and submit: `npx http-server --cors`
 
+## Mocked build (no backend)
+
+The `mock` target builds the app as a static site whose backend runs in the
+browser, so it can be developed, demoed and reviewed without a SAS server:
+
+```bash
+npm run mock:build
+npm run mock:start
+```
+
+`npm run mock:build` compiles the project and writes the site to
+`sasjsbuild/mock`; `mock:start` serves it at http://localhost:3001. Open the
+site over http(s) on localhost - a service worker needs a secure context, so
+`file://` does not work.
+
+A published copy is built from `main` and served at
+https://minimal.sasjs.io by the "Publish the mocked site" workflow.
+
+The page and the adapter are unchanged. The worker answers `/SASjsApi/...`
+from JavaScript services that mirror the SAS ones:
+
+-   `sasjs/mocks/services/common/appinit.js` returns the areas
+-   `sasjs/mocks/services/common/getdata.js` returns the springs for the chosen areas
+-   `sasjs/mocks/services/common/springs.json` holds the rows themselves
+
+`springs.json` is a generated fixture, not a copy of the SAS dataset:
+`scripts/springs-data.js` writes it from the dataset's model - the same seven
+columns, the same value ranges, the same nullable temperatures - with a fixed
+seed, so the file is reproducible rather than random and the mock answers the
+same rows on every build. The SAS services read `mydb.springs`, so the two
+agree in shape, not in values.
+
+Change the model in that script and run `node scripts/springs-data.js`;
+`npm run check:data` fails when the committed file is not what the script
+produces, so the fixture cannot drift from its generator.
+
+The same JS services are what `sasjs cb -t server` ships for the `server`
+target, which is why a deployment to sasjs/server also answers without SAS.
+
+A mocked build is a development and demo vehicle. The data lives in the
+browser, there is no SAS engine behind it, and nothing computed by SAS (PROC
+SQL, formats, CAS) exists there - use a real target for anything that needs
+SAS.
+
 
 ## Contributors ✨
 
