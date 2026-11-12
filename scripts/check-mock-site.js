@@ -33,13 +33,15 @@ if (!fs.existsSync(path.join(SITE, 'sw.js'))) {
  * answered when the page paints, so a form in the markup is a credentials
  * prompt a visitor sees before the app knows whether there is a session - on
  * this host there is no login wall at all, so it asks a question with no
- * answer. The page reveals the form from showLogin(), not from its markup. */
+ * answer. It is hidden by the ATTRIBUTE, not a class: a class is only applied
+ * once style.css arrives, and the form paints unstyled until then.
+ * showLogin() reveals it with an inline display, which wins over both. */
 const page = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8')
 
 for (const id of ['login-form', 'login']) {
   const tag = (page.match(new RegExp(`<[a-z]+[^>]*id="${id}"[^>]*>`)) || [''])[0]
 
-  if (!/\bhidden\b/.test(tag)) fail(`#${id} is shown before a session check`)
+  if (!/\shidden[\s>/]/.test(tag)) fail(`#${id} is not hidden by attribute`)
 }
 
 /* The worker registers its fetch listener on `self`, and imports its runtime
