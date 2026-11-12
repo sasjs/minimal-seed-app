@@ -3,11 +3,13 @@
  * Writes `sasjs/mocks/services/common/springs.json` - the dataset the JS mock
  * services answer from.
  *
- * The rows are GENERATED, not copied: `sashelp.springs` ships with SAS, and a
- * repository that carries its rows is carrying SAS's data. What is taken from
- * the real dataset is its model - the seven columns, their types, the ranges
- * the values sit in, and the facts that a spring may have no temperature and
- * that Celsius follows Fahrenheit.
+ * The mock's rows are generated rather than copied, so a fixture meant for a
+ * demo does not carry SAS's dataset in the repository. What is taken from the
+ * real dataset is its model - the seven columns, their types, the ranges the
+ * values sit in, and the facts that a spring may have no temperature and that
+ * Celsius follows Fahrenheit. (The SAS side of this app seeds its own copy in
+ * sasjs/utils/serviceinit.sas, which is a separate, pre-existing fixture and
+ * what ships to a real backend.)
  *
  * Generation is seeded, so the file is a fixture rather than a moving target:
  * the same script produces the same bytes, which is what `--check` asserts in
