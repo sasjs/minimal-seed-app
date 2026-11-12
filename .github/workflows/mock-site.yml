@@ -1,3 +1,5 @@
+# the site is published from main only; a pull request still builds it, so a
+# change that breaks the browser build is red here before it merges
 name: Publish the mocked site
 
 # The `mock` target builds the app as a static site whose backend runs in the
@@ -6,6 +8,9 @@ name: Publish the mocked site
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -56,6 +61,7 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
