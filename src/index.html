@@ -35,15 +35,19 @@
 
     <h1>Hello!</h1>
     <h1>
-      Welcome to the Vanilla JS Seed App for <span class="code">SASjs</span>!
+      Welcome to the
+      <a href="https://github.com/sasjs/minimal-seed-app">Vanilla JS Seed App</a>
+      for <span class="code">SASjs</span>!
     </h1>
     <!-- the login form is not this page's default state: checkSession() has not
-         answered yet, so the page must not claim the visitor is logged out -->
-    <div class="login-form hidden" id="login-form">
+         answered yet, so the page must not claim the visitor is logged out. The
+         hidden ATTRIBUTE, not a class: it hides the form before style.css has
+         been applied, and showLogin()'s inline display still overrides it -->
+    <div class="login-form" id="login-form" hidden>
       <input type="text" id="username" placeholder="Enter username" />
       <input type="password" id="password" placeholder="Enter password" />
     </div>
-    <button id="login" class="hidden">Log in</button>
+    <button id="login" hidden>Log in</button>
     <div id="data-container" class="hidden"></div>
     <div id="logout-container" class="hidden"></div>
   </body>

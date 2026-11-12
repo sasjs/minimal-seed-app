@@ -27,7 +27,9 @@ function afterLogin(insertStartUpButton = true) {
   const dataContainer = document.getElementById('data-container')
   dataContainer.classList.remove('hidden')
 
-  if (insertStartUpButton) {
+  /* once only: logging out and back in runs this again, and the button already
+     appended is still in the container */
+  if (insertStartUpButton && !document.getElementById('load-startup-data')) {
     const loadStartupDataButton = document.createElement('button')
     loadStartupDataButton.id = 'load-startup-data'
     loadStartupDataButton.innerText = 'Load Startup Data'
