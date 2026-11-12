@@ -137,6 +137,18 @@ if (!report.metadata || !report.metadata.vulnerabilities) {
 
 const vulnerabilities = report.vulnerabilities
 const names = Object.keys(vulnerabilities)
+const counts = report.metadata.vulnerabilities
+
+/* The decision is taken from `vulnerabilities` and the summary is printed from
+ * `metadata`; a report where the two disagree is not one to judge. Counts with
+ * no entries behind them read as "36 advisories" and pass at the same time. */
+if (counts.total !== names.length) {
+  console.error(
+    `the audit report counts ${counts.total} advisory package(s) but lists ` +
+      `${names.length} - nothing was judged`
+  )
+  process.exit(1)
+}
 
 const isAccepted = (name, entry) => {
   if (ACCEPTED_BY_NAME.has(name)) return true
@@ -156,8 +168,6 @@ const blocking = names.filter((name) => {
   return !isAccepted(name, entry)
 })
 
-const counts = report.metadata.vulnerabilities
-
 console.log(
   `advisories: ${counts.total} (${counts.critical || 0} critical, ` +
     `${counts.high || 0} high, ${counts.moderate || 0} moderate, ` +
@@ -175,9 +185,13 @@ if (blocking.length) {
   })
 
   console.error(
-    '\nA high or critical advisory is never accepted. A moderate outside the ' +
-      'npm-bundled tree is a new decision: fix it, or add it to ' +
-      'scripts/audit-gate.js with the reason it cannot be fixed here.'
+    '\nA high or critical advisory is never accepted. For anything else: a name ' +
+      'in BUNDLED_ONLY is accepted only where it resolves under ' +
+      '`node_modules/npm/node_modules/` (the copy @semantic-release/npm bundles, ' +
+      'which overrides cannot reach), so a finding against the same name at any ' +
+      'other path is a real dependency to fix. ACCEPTED_BY_NAME is the other ' +
+      'kind of decision - it stops gating that package wherever it appears, and ' +
+      'should be added to only with a reason.'
   )
   process.exit(1)
 }
