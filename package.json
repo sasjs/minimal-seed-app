@@ -7,11 +7,15 @@
   "scripts": {
     "start": "npx http-server ./src -p 3000",
     "deploy": "rsync -avhe ssh ./src/* --delete $SSH_ACCOUNT:$DEPLOY_PATH",
-    "prepare": "cpy-t node_modules/@sasjs/adapter/index.js src/sasjs.js",
+    "prepare": "cpy-t node_modules/@sasjs/adapter/dist/sasjs-adapter.js src/sasjs.js",
     "requestinit": "sasjs request services/common/appinit",
     "requestdata": "sasjs request services/common/getdata -d sasjs/utils/requestpayload.json",
     "lint": "npx prettier --check \"{src,test}/**/*.{ts,tsx,js,jsx,html,css,sass,less,yml,md,graphql}\"",
-    "lint:fix": "npx prettier --write \"{src,test}/**/*.{ts,tsx,js,jsx,html,css,sass,less,yml,md,graphql}\""
+    "lint:fix": "npx prettier --write \"{src,test}/**/*.{ts,tsx,js,jsx,html,css,sass,less,yml,md,graphql}\"",
+    "mock:build": "sasjs compile -t mock && sasjs build -t mock",
+    "mock:start": "npx http-server ./sasjsbuild/mock -p 3001",
+    "check:data": "node scripts/springs-data.js --check",
+    "test:mock": "node scripts/check-mock-site.js"
   },
   "keywords": [
     "SAS",
@@ -21,9 +25,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@sasjs/adapter": "4.19.1",
-    "@sasjs/cli": "4.20.4",
-    "@sasjs/core": "5.2.10",
+    "@sasjs/adapter": "6.1.0",
+    "@sasjs/cli": "6.27.3",
+    "@sasjs/core": "7.1.14",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "10.0.1",
