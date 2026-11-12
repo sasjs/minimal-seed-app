@@ -1,3 +1,15 @@
+# [1.6.0](https://github.com/sasjs/minimal-seed-app/compare/v1.5.0...v1.6.0) (2026-11-12)
+
+
+### Bug Fixes
+
+* make the log in and log out flow work ([035d4ab](https://github.com/sasjs/minimal-seed-app/commit/035d4aba7831c87200c5fb76c5dcfdbb26e5e9ea)), closes [#data-container](https://github.com/sasjs/minimal-seed-app/issues/data-container) [#results](https://github.com/sasjs/minimal-seed-app/issues/results)
+
+
+### Features
+
+* **ui:** a conventional page, with the source mark in the corner ([0e8b15d](https://github.com/sasjs/minimal-seed-app/commit/0e8b15d5dcfe4055883dbf0f0b80e5b6df95d173))
+
 # [1.5.0](https://github.com/sasjs/minimal-seed-app/compare/v1.4.1...v1.5.0) (2026-11-12)
 
 
