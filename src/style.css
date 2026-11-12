@@ -6,44 +6,49 @@
 }
 * {
   font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+}
+
+/* `hidden` is how this page declares "not shown yet". The attribute's own rule
+   loses to an id selector, and these containers are styled by id, so say it
+   once here instead of giving every container its own rule. */
+[hidden] {
+  display: none !important;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
-  padding-bottom: 30px;
+  padding: 2rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-body,
-#data-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-#data-container {
+main {
   width: 100%;
+  max-width: 44rem;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.25rem;
+}
+
+.subtitle {
+  margin: 0.5rem 0 2.25rem;
+  color: #4a3f3f;
 }
 
 .code {
   font-family: Monaco, Courier, monospace;
   border: 1px solid #d9d9d9;
-  padding: 5px;
+  padding: 2px 6px;
   border-radius: 3px;
   background-color: #4a3f3f;
   color: #f79205;
-}
-
-/* the one link on the page: the heading that names the app points at its
-   source, in the heading's own colour with the accent underline */
-h1 a {
-  color: inherit;
-  text-decoration-color: #f79205;
-  text-underline-offset: 0.2em;
-}
-
-h1 a:hover {
-  text-decoration-thickness: 3px;
+  vertical-align: middle;
 }
 
 button {
@@ -54,35 +59,96 @@ button {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
-  margin: 10px 0;
-}
-
-button:focus,
-input:focus {
-  outline: none;
 }
 
 button:hover {
   box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.1);
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid #f79205;
+  outline-offset: 2px;
 }
 
-.login-form input {
+#login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#login-form input,
+#login-form button {
+  width: 16rem;
+}
+
+#login-form input {
   padding: 10px;
   border-radius: 5px;
-  font-size: 20px;
+  font-size: 1rem;
   border: 1px solid #d9d9d9;
-  margin-top: 5px;
+}
+
+#login-error {
+  margin: 0;
+  color: #b3261e;
+  font-size: 0.875rem;
+}
+
+#data-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+#results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  overflow-x: auto;
 }
 
 select {
-  font-size: 16px;
-  padding: 20px;
-  width: 30%;
+  font-size: 1rem;
+  padding: 0.6rem;
+  min-width: 16rem;
+}
+
+#logout-container {
+  margin-top: 1.25rem;
+}
+
+/* log out is the secondary action: the seed app's one useful button is above it */
+#logout {
+  background: none;
+  border: 1px solid #c7cbe6;
+  color: #3f51b5;
+  font-size: 14px;
+  padding: 8px 22px;
+}
+
+#logout:hover {
+  background: #f4f5fb;
+  box-shadow: none;
+}
+
+/* the page's one outbound link: a conventional mark, out of the way */
+.source {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  color: #767676;
+}
+
+.source:hover {
+  color: #f79205;
 }
 
 table {
@@ -93,7 +159,7 @@ table {
 }
 th,
 td {
-  padding: 10px 15px;
+  padding: 8px 12px;
   vertical-align: middle;
   font-weight: normal;
 }
@@ -113,8 +179,4 @@ td {
 }
 td:first-child {
   border-left: 1px solid #cecfd5;
-}
-
-.hidden {
-  display: none;
 }
