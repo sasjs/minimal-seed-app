@@ -1,3 +1,16 @@
+# [1.5.0](https://github.com/sasjs/minimal-seed-app/compare/v1.4.1...v1.5.0) (2026-11-12)
+
+
+### Bug Fixes
+
+* do not append a second Load Startup Data button ([7356a12](https://github.com/sasjs/minimal-seed-app/commit/7356a12987031a1ea2a4ff9f74f817e2e1e87951))
+* hide the login form with the hidden attribute, not a class ([3653c34](https://github.com/sasjs/minimal-seed-app/commit/3653c34fb3830b775684f073126e816ea5f259e8))
+
+
+### Features
+
+* make the homepage heading link to this repo ([8c40b75](https://github.com/sasjs/minimal-seed-app/commit/8c40b7519f8ecb53006a3e6a352448969cffb7a2))
+
 ## [1.4.1](https://github.com/sasjs/minimal-seed-app/compare/v1.4.0...v1.4.1) (2026-11-12)
 
 
