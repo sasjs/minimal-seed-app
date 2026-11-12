@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/sasjs/minimal-seed-app/compare/v1.6.0...v1.6.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* wire the controls once the page is parsed, not in <head> ([59b8136](https://github.com/sasjs/minimal-seed-app/commit/59b81363e2478f7069e1e59cc665d54968f48751))
+
 # [1.6.0](https://github.com/sasjs/minimal-seed-app/compare/v1.5.0...v1.6.0) (2026-11-12)
 
 
