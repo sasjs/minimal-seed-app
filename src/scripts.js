@@ -173,6 +173,16 @@ function createRows(dataRows) {
 }
 
 function startApp() {
+  /* The controls are wired here, and not at the top of this file, because the
+     DOM is only guaranteed to exist now. Wired at the top they were null on a
+     host that serves the page as it is - the browser runs a <head> script before
+     the body is parsed - so the file stopped with
+     "Cannot set properties of null (setting 'onclick')" and the app never
+     started. A mock build replays these scripts after the load event, which is
+     the one host where the top-level form happened to work. */
+  document.getElementById('load-startup-data').onclick = loadStartupData
+  document.getElementById('logout').onclick = logout
+
   const sasjsElement = document.querySelector('sasjs')
   const useComputeApi = sasjsElement.getAttribute('useComputeApi')
 
@@ -204,14 +214,13 @@ function startApp() {
     })
 }
 
-document.getElementById('load-startup-data').onclick = loadStartupData
-document.getElementById('logout').onclick = logout
-
 /* Start once the page is parsed, whether this script runs as the document is
    still loading or after it has been parsed. The second case is real: a mock
    build replays the page's scripts once the browser host is ready, which is
    after the load event - and a `window.onload` handler assigned that late
-   never runs. */
+   never runs. The first case is the ordinary one, on every host that serves the
+   page as it is: these tags are in <head>, so this file runs before <body>
+   exists and nothing in it may touch the document until then. */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp)
 } else {
