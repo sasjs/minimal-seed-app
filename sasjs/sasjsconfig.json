@@ -37,7 +37,8 @@
         "assetPaths": [],
         "streamServiceName": "clickme"
       },
-      "contextName": "SAS Job Execution compute context"
+      "contextName": "SAS Job Execution compute context",
+      "sasjsBuildFolder": "sasjsbuild/viya"
     },
     {
       "name": "sas9",
@@ -55,7 +56,8 @@
         "streamWeb": true,
         "streamWebFolder": "web9",
         "webSourcePath": "src"
-      }
+      },
+      "sasjsBuildFolder": "sasjsbuild/sas9"
     },
     {
       "name": "server",
@@ -72,7 +74,8 @@
         "webSourcePath": "src",
         "streamServiceName": "minimal-seed-app",
         "assetPaths": []
-      }
+      },
+      "sasjsBuildFolder": "sasjsbuild/server"
     },
     {
       "name": "mock",
@@ -86,5 +89,24 @@
         "webSourcePath": "src"
       }
     }
-  ]
+  ],
+  "release": {
+    "assets": [
+      {
+        "path": "sasjsbuild/server/server.json.zip",
+        "name": "server.json.zip",
+        "label": "SASjs Streamed App"
+      },
+      {
+        "path": "sasjsbuild/sas9/mysas9deploy.sas",
+        "name": "sas9.sas",
+        "label": "SAS 9 EBI Deployment Program"
+      },
+      {
+        "path": "sasjsbuild/viya/myviyadeploy.sas",
+        "name": "viya.sas",
+        "label": "Viya Deployment Program"
+      }
+    ]
+  }
 }
