@@ -119,4 +119,4 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx sasjs-release --host github --release
+        run: npx sasjs-release --release
