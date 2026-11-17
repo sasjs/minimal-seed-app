@@ -1,91 +1,138 @@
-/*
- * The table parser getdata.js runs on an uploaded `areas` table.
- *
- * It is checked here rather than through the built site, because the site
- * cannot tell a broken parser from a filtered answer: getdata answers the rows
- * whose AREA it recognised, so a row torn in two simply matches nothing and the
- * page draws an empty table. These are the shapes @sasjs/adapter's convertToCSV
- * emits, including the one that used to be mis-split - a quoted value holding a
- * line break.
- *
- * Run: node --test scripts/
- */
-
-const assert = require('node:assert')
-const fs = require('fs')
-const path = require('path')
+/* Execute the stored program with the installed shared prelude on both hosts.
+ * SASJS_WEBOUT_MODULE can override it with a locally built webout module. */
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+const os = require('node:os')
 const { test } = require('node:test')
 
-const SOURCE = path.resolve(
+const common = path.join(
   __dirname,
   '..',
   'sasjs',
   'mocks',
   'services',
-  'common',
-  'getdata.js'
+  'common'
 )
+const source = fs.readFileSync(path.join(common, 'getdata.js'), 'utf8')
+const seed = JSON.parse(
+  fs.readFileSync(path.join(common, 'springs.json'), 'utf8')
+)
+const scratch = os.tmpdir()
+const realModule = process.env.SASJS_WEBOUT_MODULE
+const preludeModule = realModule
+  ? require(path.resolve(realModule))
+  : require('@sasjs/utils')
+const program = '/Public/app/demo/services/common/getdata'
 
-/* The service is a stored program: a single file with no exports, because that
- * is the shape the host runs. So the parser is taken from the source by its
- * boundaries - if it is renamed or moved, this fails loudly rather than
- * silently testing nothing. */
-const loadParser = () => {
-  const source = fs.readFileSync(SOURCE, 'utf8')
-  const start = source.indexOf('const parseCsv')
-  const end = source.indexOf('const wanted')
-
-  assert.ok(start > -1 && end > start, 'parseCsv was not found in getdata.js')
-
-  return new Function(`${source.slice(start, end)}; return parseCsv`)()
+function runService(browser, csv, springs = seed) {
+  fs.mkdirSync(scratch, { recursive: true })
+  const dir = fs.mkdtempSync(path.join(scratch, 'getdata-'))
+  try {
+    const weboutPath = path.join(dir, 'sessions', 's1', 'webout.txt')
+    const headersPath = path.join(dir, 'sessions', 's1', 'headers.txt')
+    const drive = path.join(
+      dir,
+      'drive',
+      'files',
+      'Public',
+      'app',
+      'demo',
+      'services',
+      'common'
+    )
+    fs.mkdirSync(path.dirname(weboutPath), { recursive: true })
+    fs.mkdirSync(drive, { recursive: true })
+    fs.writeFileSync(weboutPath, '')
+    fs.writeFileSync(headersPath, '')
+    fs.writeFileSync(path.join(drive, 'springs.json'), JSON.stringify(springs))
+    if (fs.existsSync(path.join(common, 'mock-sas-log.json'))) {
+      fs.copyFileSync(
+        path.join(common, 'mock-sas-log.json'),
+        path.join(drive, 'mock-sas-log.json')
+      )
+    }
+    const isolated = {}
+    const setup = preludeModule.getWeboutPrelude({
+      weboutPath,
+      headersPath,
+      program,
+      debug: '',
+      username: 'test',
+      userId: 'test',
+      apiServerUrl: 'http://localhost'
+    })
+    const context = {
+      tables:
+        csv === undefined
+          ? []
+          : [
+              {
+                name: 'unrelated',
+                filename: 'other.csv',
+                csv: 'x:$char1.\r\nx'
+              },
+              {
+                name: 'areas',
+                filename: 'areas.csv',
+                csv: browser ? csv : Buffer.from(csv)
+              }
+            ]
+    }
+    const programFn = new Function(
+      'require',
+      'fs',
+      'weboutPath',
+      '_program',
+      'globalThis',
+      'console',
+      '_sasjs_fetch_context',
+      `let _webout = '';\n${setup}\nconst webout = globalThis.webout;\n${source}`
+    )
+    const requireHost = browser
+      ? (name) => {
+          if (name === 'path') return path
+          throw new Error(`browser has no ${name}`)
+        }
+      : require
+    const quiet = { log() {}, warn() {}, error() {} }
+    programFn(requireHost, fs, weboutPath, program, isolated, quiet, context)
+    return JSON.parse(fs.readFileSync(weboutPath, 'utf8'))
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
 }
 
-const parseCsv = loadParser()
-
-test('a plain single-column table', () => {
-  assert.deepStrictEqual(parseCsv('area:$char5.\r\nAdak'), [{ AREA: 'Adak' }])
-})
-
-test('several rows, CRLF separated', () => {
-  assert.deepStrictEqual(parseCsv('area:$char4.\r\nAdak\r\nAdel'), [
-    { AREA: 'Adak' },
-    { AREA: 'Adel' }
-  ])
-})
-
-test('several columns keep their order', () => {
-  assert.deepStrictEqual(parseCsv('a:$char1. b:best.\r\nx,1\r\ny,2'), [
-    { A: 'x', B: '1' },
-    { A: 'y', B: '2' }
-  ])
-})
-
-test('a quoted value with a comma is one value', () => {
-  assert.deepStrictEqual(parseCsv('area:$char9.\r\n"Ad,ak"'), [
-    { AREA: 'Ad,ak' }
-  ])
-})
-
-test('a quoted value with a line break is one record', () => {
-  assert.deepStrictEqual(parseCsv('area:$char9.\r\n"Ad\nak"'), [
-    { AREA: 'Ad\nak' }
-  ])
-})
-
-test('a quoted line break does not swallow the row after it', () => {
-  assert.deepStrictEqual(parseCsv('area:$char9.\r\n"Ad\nak"\r\nAdel'), [
-    { AREA: 'Ad\nak' },
-    { AREA: 'Adel' }
-  ])
-})
-
-test('a doubled quote is one quote', () => {
-  assert.deepStrictEqual(parseCsv('area:$char6.\r\n"Ad""ak"'), [
-    { AREA: 'Ad"ak' }
-  ])
-})
-
-test('no table is no rows', () => {
-  assert.deepStrictEqual(parseCsv(''), [])
-  assert.deepStrictEqual(parseCsv('area:$char5.'), [])
-})
+for (const browser of [false, true]) {
+  const host = `${browser ? 'browser' : 'server'} (shared prelude)`
+  test(`${host}: FETCH selects seeded rows in dataset order`, () => {
+    const first = seed[0].AREA
+    const second = seed.find((row) => row.AREA !== first).AREA
+    const result = runService(
+      browser,
+      `area:$char40.\r\n ${second} \r\n${first}`
+    )
+    assert.deepEqual(
+      result.springs,
+      seed.filter((row) => row.AREA === first || row.AREA === second)
+    )
+  })
+  test(`${host}: missing areas returns no springs`, () => {
+    assert.deepEqual(runService(browser, undefined).springs, [])
+  })
+  test(`${host}: area column names remain case insensitive`, () => {
+    const area = seed[0].AREA
+    assert.deepEqual(
+      runService(browser, `ArEa:$char40.\r\n${area}`).springs,
+      seed.filter((row) => row.AREA === area)
+    )
+  })
+  test(`${host}: quoted CSV values are used whole`, () => {
+    const springs = [
+      { AREA: 'A, "B"\nC', NAME: 'fixture' },
+      { AREA: 'Other', NAME: 'other' }
+    ]
+    const csv = 'area:$char40.\r\n"A, ""B""\nC"'
+    assert.deepEqual(runService(browser, csv, springs).springs, [springs[0]])
+  })
+}
