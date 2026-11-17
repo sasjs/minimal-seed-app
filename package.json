@@ -35,8 +35,5 @@
     "@sasjs/core": "7.1.14",
     "@sasjs/release": "0.11.1",
     "@sasjs/utils": "4.13.0"
-  },
-  "dependencies": {
-    "replace-in-files-cli": "4.0.0"
   }
 }
