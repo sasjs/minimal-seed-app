@@ -51,6 +51,7 @@ jobs:
       - run: |
           npm run mock:build
           npm run test:mock
+          npm run test:mock:browser
 
       # a custom domain is a file in the published folder: without it Pages
       # serves the site at github.io/<repo>/ and the DNS record points nowhere
