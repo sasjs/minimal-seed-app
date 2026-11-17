@@ -18,7 +18,7 @@
     "test:mock": "node scripts/check-mock-site.js",
     "test:mock:browser": "node scripts/check-mock-browser.js",
     "check:bundle": "node scripts/adapter-bundle.js --check",
-    "test:unit": "node --test scripts/getdata-parser.test.js scripts/audit-gate.test.js scripts/page-boot.test.js",
+    "test:unit": "node --test scripts/getdata-parser.test.js scripts/audit-gate.test.js scripts/page-boot.test.js scripts/check-mock-browser.test.js",
     "audit:gate": "node scripts/audit-gate.js",
     "release": "sasjs-release",
     "release:dry": "sasjs-release --dry-run"

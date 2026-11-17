@@ -70,15 +70,17 @@ const server = http.createServer((req, res) => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 async function main() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'seed-browser-'))
-  let chrome, ws
+  let chrome, ws, chromeStarted = false
   try {
     server.listen(0, '127.0.0.1')
     await once(server, 'listening')
-    chrome = spawn(
+    const binary =
       process.env.CHROMIUM_PATH ||
-        (fs.existsSync('/usr/bin/google-chrome')
-          ? '/usr/bin/google-chrome'
-          : 'chromium'),
+      (fs.existsSync('/usr/bin/google-chrome')
+        ? '/usr/bin/google-chrome'
+        : 'chromium')
+    chrome = spawn(
+      binary,
       [
         '--headless=new',
         '--no-sandbox',
@@ -90,6 +92,12 @@ async function main() {
       ],
       { stdio: 'ignore' }
     )
+    try {
+      await once(chrome, 'spawn')
+      chromeStarted = true
+    } catch (error) {
+      throw new Error(`Failed to launch Chromium (${binary}): ${error.message}`)
+    }
     let port
     for (let i = 0; i < 200 && !port; i++) {
       if (chrome.exitCode !== null)
@@ -197,7 +205,7 @@ async function main() {
     }
   } finally {
     if (ws) ws.close()
-    if (chrome && chrome.exitCode === null) {
+    if (chromeStarted && chrome.exitCode === null && chrome.signalCode === null) {
       const closed = once(chrome, 'close')
       chrome.kill()
       await closed
