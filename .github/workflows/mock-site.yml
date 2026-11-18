@@ -44,6 +44,13 @@ jobs:
 
       - run: npm ci
 
+      # This build produces the Pages artifact independently of release.yml.
+      - name: Audit the dependencies that ship
+        run: npm audit --omit=dev
+
+      - name: Audit the dev toolchain
+        run: npm run audit:gate
+
       - run: npm run check:bundle
 
       - run: npm run test:unit
