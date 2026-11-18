@@ -25,7 +25,13 @@ const preludeModule = realModule
   : require('@sasjs/utils')
 const program = '/Public/app/demo/services/common/getdata'
 
-function runService(browser, csv, springs = seed, service = source) {
+function runService(
+  browser,
+  csv,
+  springs = seed,
+  service = source,
+  removeUpload = false
+) {
   fs.mkdirSync(scratch, { recursive: true })
   const dir = fs.mkdtempSync(path.join(scratch, 'getdata-'))
   try {
@@ -62,6 +68,12 @@ function runService(browser, csv, springs = seed, service = source) {
       userId: 'test',
       apiServerUrl: 'http://localhost'
     })
+    // The path is private to the host. FETCH gets a lazy UTF-8 view of it.
+    const staged = path.join(dir, 'areas.csv')
+    if (csv !== null && csv !== undefined) {
+      fs.writeFileSync(staged, csv)
+      if (removeUpload) fs.unlinkSync(staged)
+    }
     const context = {
       tables:
         csv === null
@@ -83,7 +95,9 @@ function runService(browser, csv, springs = seed, service = source) {
                 {
                   name: 'areas',
                   filename: 'areas.csv',
-                  csv: browser ? csv : Buffer.from(csv)
+                  get csv() {
+                    return fs.readFileSync(staged, 'utf8')
+                  }
                 }
               ]
     }
@@ -113,6 +127,12 @@ function runService(browser, csv, springs = seed, service = source) {
 
 for (const browser of [false, true]) {
   const host = `${browser ? 'browser' : 'server'} (shared prelude)`
+  test(`${host}: a missing staged file makes FETCH fail`, () => {
+    assert.throws(
+      () => runService(browser, 'area:$char40.\r\nexample', seed, source, true),
+      /ENOENT/
+    )
+  })
   test(`${host}: FETCH selects seeded rows in dataset order`, () => {
     const first = seed[0].AREA
     const second = seed.find((row) => row.AREA !== first).AREA
