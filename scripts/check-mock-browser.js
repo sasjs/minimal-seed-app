@@ -31,9 +31,9 @@ const script = `window.addEventListener('load', () => {
     const request = (data) => sas.request('services/common/getdata', data);
     return [await request({areas: [{AREA: ${JSON.stringify(area)}}], extra: [{X: 'force; file'}]}), await request({unrelated: [{AREA: ${JSON.stringify(area)}}]}), await request({areas: [{OTHER: 'undefined'}]})];
   };
-  // Minimal's pinned adapter 6.1.0 lacks the host readiness gate. This test
-  // waits for the real host; first-load requests before readiness are not covered.
-  window.result = window.__sasjsMockReady.then(() => Promise.all([run(false), run(true)])).catch(error => { throw Error(JSON.stringify(error)); });
+  // Start on native load without awaiting host readiness: the released adapter
+  // must wait for the generated mock host before sending its first request.
+  window.result = Promise.all([run(false), run(true)]);
 });`
 const server = http.createServer((req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname

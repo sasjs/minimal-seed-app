@@ -31,9 +31,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@sasjs/adapter": "6.1.0",
-    "@sasjs/cli": "7.4.0",
-    "@sasjs/core": "7.1.14",
+    "@sasjs/adapter": "6.1.2",
+    "@sasjs/cli": "8.0.0",
+    "@sasjs/core": "7.1.15",
     "@sasjs/release": "0.11.1",
     "@sasjs/utils": "4.13.0"
   }

@@ -48,10 +48,20 @@ jobs:
 
       - run: npm run test:unit
 
+      # Pin the browser and the installer so runner image updates do not change
+      # the browser exercised by this regression check.
+      - name: Install Chrome for Testing
+        id: chrome
+        uses: browser-actions/setup-chrome@48483d551c22a1fe6154c6a195ccc6d5773dc8c4 # v2
+        with:
+          chrome-version: 158.0.8127.36
+
       - run: |
           npm run mock:build
           npm run test:mock
           npm run test:mock:browser
+        env:
+          CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
 
       # a custom domain is a file in the published folder: without it Pages
       # serves the site at github.io/<repo>/ and the DNS record points nowhere

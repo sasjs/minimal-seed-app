@@ -2982,6 +2982,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SASViyaApiClient = void 0;
 const utils_1 = __webpack_require__(9266);
+const joinFolderPath_1 = __webpack_require__(459);
 const form_data_1 = __importDefault(__webpack_require__(1894));
 const errors_1 = __webpack_require__(7388);
 const SessionManager_1 = __webpack_require__(8697);
@@ -3039,9 +3040,7 @@ class SASViyaApiClient {
      */
     getJobsInFolder(folderPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const path = (0, utils_1.isRelativePath)(folderPath)
-                ? `${this.rootFolderName}/${folderPath}`
-                : folderPath;
+            const path = this.folderMapKey(folderPath);
             if (this.folderMap.get(path)) {
                 return this.folderMap.get(path);
             }
@@ -3243,8 +3242,11 @@ class SASViyaApiClient {
      */
     getFolder(folderPath, accessToken) {
         return __awaiter(this, void 0, void 0, function* () {
+            // one of the three places a path becomes a request, so the same normalisation
+            // applies here as in getFolderDetails - otherwise getFolder('//app') sends the
+            // string this class now refuses to send anywhere else
             return yield this.requestClient
-                .get(`/folders/folders/@item?path=${folderPath}`, accessToken)
+                .get(`/folders/folders/@item?path=${(0, joinFolderPath_1.normaliseFolderPath)(folderPath)}`, accessToken)
                 .then((res) => res.result);
         });
     }
@@ -3373,10 +3375,10 @@ class SASViyaApiClient {
                     parentFolderUri = `/folders/folders/${parentFolder.id}`;
                 }
                 else if (isForced) {
-                    const folderPath = parentFolderPath + '/' + folderName;
+                    const folderPath = (0, joinFolderPath_1.joinFolderPath)(parentFolderPath, folderName);
                     const folderUri = yield this.getFolderUri(folderPath, accessToken);
                     if (folderUri) {
-                        yield this.deleteFolder(parentFolderPath + '/' + folderName, accessToken);
+                        yield this.deleteFolder(folderPath, accessToken);
                     }
                 }
             }
@@ -3399,8 +3401,21 @@ class SASViyaApiClient {
                 }
                 throw err;
             });
-            // update folder map with newly created folder.
-            yield this.populateFolderMap(`${parentFolderPath}/${folderName}`, accessToken);
+            // The POST answered with the folder it created, so there is nothing to look up:
+            // a new folder has no members, and re-reading it by a path joined here by hand
+            // is how the doubled slash in adapter#974 reached the server.
+            //
+            // An empty member list is only ever written for a folder that has just been
+            // created, which is the one case where it is exact: a folder that already
+            // existed refuses the POST (409) unless `isForced` deleted it first, and a
+            // deleted folder takes its members with it. So this cannot drop members the
+            // server still has.
+            //
+            // A caller may have given a URI instead of a path, in which case there is no
+            // key to file it under - and the previous code filed it under "undefined/name".
+            if (parentFolderPath) {
+                this.folderMap.set(this.folderMapKey((0, joinFolderPath_1.joinFolderPath)(parentFolderPath, folderName)), []);
+            }
             return createFolderResponse;
         });
     }
@@ -3541,7 +3556,7 @@ class SASViyaApiClient {
             yield this.populateFolderMap(fullFolderPath, access_token).catch((err) => {
                 throw (0, error_1.prefixMessage)(err, 'Error while populating folder map. ');
             });
-            const jobFolder = this.folderMap.get(fullFolderPath);
+            const jobFolder = this.folderMap.get(this.folderMapKey(fullFolderPath));
             if (!jobFolder) {
                 throw new Error(`The folder '${fullFolderPath}' was not found on '${this.serverUrl}'`);
             }
@@ -3597,7 +3612,7 @@ class SASViyaApiClient {
                 ? `${this.rootFolderName}/${folderPath}`
                 : folderPath;
             yield this.populateFolderMap(fullFolderPath, access_token);
-            const jobFolder = this.folderMap.get(fullFolderPath);
+            const jobFolder = this.folderMap.get(this.folderMapKey(fullFolderPath));
             if (!jobFolder) {
                 throw new Error(`The folder '${fullFolderPath}' was not found on '${this.serverUrl}'.`);
             }
@@ -3671,11 +3686,21 @@ class SASViyaApiClient {
             return executionResult;
         });
     }
+    /**
+     * The key `folderMap` stores a folder's members under.
+     *
+     * Normalised, so a caller's '//app' and its own '/app' are one key: the map is
+     * written by populateFolderMap and read by four other methods, and a path that
+     * needs normalising must not miss its own entry.
+     */
+    folderMapKey(folderPath) {
+        return (0, joinFolderPath_1.normaliseFolderPath)((0, utils_1.isRelativePath)(folderPath)
+            ? `${this.rootFolderName}/${folderPath}`
+            : folderPath);
+    }
     populateFolderMap(folderPath, accessToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const path = (0, utils_1.isRelativePath)(folderPath)
-                ? `${this.rootFolderName}/${folderPath}`
-                : folderPath;
+            const path = this.folderMapKey(folderPath);
             if (this.folderMap.get(path)) {
                 return;
             }
@@ -3710,9 +3735,12 @@ class SASViyaApiClient {
     }
     getFolderDetails(folderPath, accessToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const url = (0, utils_1.isUri)(folderPath)
-                ? folderPath
-                : `/folders/folders/@item?path=${folderPath}`;
+            // every caller reaches the server through here, so the collapse happens at the
+            // point a path becomes a URL rather than at each place one is built
+            const normalisedPath = (0, joinFolderPath_1.normaliseFolderPath)(folderPath);
+            const url = (0, utils_1.isUri)(normalisedPath)
+                ? normalisedPath
+                : `/folders/folders/@item?path=${normalisedPath}`;
             const { result: folder } = yield this.requestClient
                 .get(`${this.serverUrl}${url}`, accessToken)
                 .catch((err) => {
@@ -6099,6 +6127,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AuthManager = void 0;
 const types_1 = __webpack_require__(3631);
+const MockReadinessError_1 = __webpack_require__(314);
 const errors_1 = __webpack_require__(7388);
 const utils_1 = __webpack_require__(9266);
 const extractUserLongNameSas9_1 = __webpack_require__(8548);
@@ -6345,6 +6374,8 @@ class AuthManager {
             const { result: loginResponse } = yield this.requestClient
                 .get(url, undefined, 'text/plain')
                 .catch((err) => {
+                if (err instanceof MockReadinessError_1.MockReadinessError)
+                    throw err;
                 return { result: 'authErr' };
             });
             const isLoggedIn = loginResponse !== 'authErr';
@@ -7319,6 +7350,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.FileUploader = void 0;
 const utils_1 = __webpack_require__(9266);
 const errors_1 = __webpack_require__(7388);
+const MockReadinessError_1 = __webpack_require__(314);
 const types_1 = __webpack_require__(3631);
 const JobExecutor_1 = __webpack_require__(1101);
 class FileUploader extends JobExecutor_1.BaseJobExecutor {
@@ -7410,7 +7442,9 @@ class FileUploader extends JobExecutor_1.BaseJobExecutor {
                         yield loginCallback();
                     }
                     else {
-                        reject(new errors_1.ErrorResponse('File upload request failed.', e));
+                        reject(new errors_1.ErrorResponse(e instanceof MockReadinessError_1.MockReadinessError
+                            ? e.message
+                            : 'File upload request failed.', e));
                     }
                 }));
             });
@@ -8088,6 +8122,8 @@ const utils_1 = __webpack_require__(9266);
 const InvalidSASjsCsrfError_1 = __webpack_require__(4001);
 const host_1 = __webpack_require__(5334);
 const isNode_1 = __webpack_require__(6308);
+const mockReadiness_1 = __webpack_require__(2600);
+const MockReadinessError_1 = __webpack_require__(314);
 class RequestClient {
     constructor(baseUrl, httpsAgentOptions, requestsLimit, verboseMode) {
         this.baseUrl = baseUrl;
@@ -8096,6 +8132,7 @@ class RequestClient {
         this.verboseMode = false;
         this.csrfToken = { headerName: '', value: '' };
         this.isRecoveringFromNetworkError = false;
+        this.mockReadiness = (0, mockReadiness_1.captureMockReadiness)();
         /**
          * this method returns all requests, an array of SASjsRequest type
          * @returns SASjsRequest[]
@@ -8202,6 +8239,8 @@ ${resHeaders}${parsedResBody ? `\n\n${parsedResBody}` : ''}
         };
         this.handleAxiosError = (error) => {
             var _a, _b, _c, _d, _e;
+            if (error instanceof MockReadinessError_1.MockReadinessError || (error === null || error === void 0 ? void 0 : error.code) === 'ERR_CANCELED')
+                throw error;
             // Message indicating absent value.
             const noValueMessage = 'Not provided';
             const { response, request, config } = error;
@@ -8673,6 +8712,9 @@ ${resHeaders}${parsedResBody ? `\n\n${parsedResBody}` : ''}
             ? new ((__webpack_require__(9251).Agent))(httpsAgentOptions)
             : undefined;
         this.httpClient = (0, utils_1.createAxiosInstance)(baseUrl, httpsAgent);
+        if (this.mockReadiness) {
+            (0, mockReadiness_1.installMockReadinessGate)(this.httpClient, this.mockReadiness);
+        }
         this.httpClient.defaults.validateStatus = (status) => {
             return status >= 200 && status <= 401;
         };
@@ -9066,6 +9108,315 @@ class SasjsRequestClient extends RequestClient_1.RequestClient {
 }
 exports.SasjsRequestClient = SasjsRequestClient;
 exports.SASJS_LOGS_SEPARATOR = 'SASJS_LOGS_SEPARATOR_163ee17b6ff24f028928972d80a26784';
+
+
+/***/ },
+
+/***/ 2600
+(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.waitForMockReadiness = exports.installMockReadinessGate = exports.captureMockReadiness = void 0;
+const axios_1 = __importStar(__webpack_require__(6425));
+const MockReadinessError_1 = __webpack_require__(314);
+const captureMockReadiness = () => {
+    if (typeof window === 'undefined')
+        return undefined;
+    const ready = window.__sasjsMockReady;
+    if (!ready || typeof ready.then !== 'function')
+        return undefined;
+    const promise = Promise.resolve(ready);
+    promise.catch(() => { });
+    const boot = Array.from(document.scripts).find((script) => {
+        try {
+            return new URL(script.src, window.location.href).pathname.endsWith('/host/boot.js');
+        }
+        catch (_a) {
+            return false;
+        }
+    });
+    const scope = boot
+        ? new URL('../', boot.src)
+        : new URL('/', window.location.href);
+    return { promise, scope };
+};
+exports.captureMockReadiness = captureMockReadiness;
+// Native promises cannot unsubscribe reactions. Attach only one reaction per
+// host promise, and keep removable per-request listeners in a separate hub.
+const readinessHubs = new WeakMap();
+const getReadinessHub = (promise) => {
+    const existing = readinessHubs.get(promise);
+    if (existing)
+        return existing;
+    const listeners = new Set();
+    let outcome;
+    const settle = (value, failed) => {
+        outcome = { value, failed };
+        for (const listener of listeners)
+            listener(value, failed);
+        listeners.clear();
+    };
+    const hub = {
+        subscribe: (listener) => {
+            if (outcome) {
+                const settled = outcome;
+                Promise.resolve().then(() => listener(settled.value, settled.failed));
+                return () => { };
+            }
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+        }
+    };
+    readinessHubs.set(promise, hub);
+    promise.then((value) => settle(value, false), (error) => settle(error, true));
+    return hub;
+};
+// Install the gate after the user's transforms: a transform may replace the
+// adapter or the URL, and Axios chooses its adapter only after transforming.
+const installMockReadinessGate = (client, ready) => {
+    client.interceptors.request.use((config) => {
+        // The adapter fallback survives a later interceptor replacing the entire
+        // transform list. The final transform below also covers transforms that
+        // deliberately select a different adapter.
+        let fallback;
+        const wrapAdapter = (selected) => {
+            if (selected === fallback && fallback)
+                return fallback;
+            return (dispatched) => {
+                const adapter = axios_1.default.getAdapter(selected, dispatched);
+                if (!isMockTarget(ready, dispatched))
+                    return adapter(dispatched);
+                const browserTransport = isBrowserTransport(adapter, dispatched);
+                if (browserTransport)
+                    preserveBrowserXsrf(dispatched);
+                if (browserTransport &&
+                    typeof FormData !== 'undefined' &&
+                    dispatched.data instanceof FormData &&
+                    typeof dispatched.data.entries === 'function') {
+                    const snapshot = new FormData();
+                    for (const [name, value] of dispatched.data.entries()) {
+                        snapshot.append(name, value);
+                    }
+                    dispatched.data = snapshot;
+                }
+                else if (browserTransport &&
+                    dispatched.data instanceof ArrayBuffer) {
+                    dispatched.data = dispatched.data.slice(0);
+                }
+                return (0, exports.waitForMockReadiness)(ready, dispatched).then(() => {
+                    var _a, _b;
+                    (_a = dispatched.cancelToken) === null || _a === void 0 ? void 0 : _a.throwIfRequested();
+                    if ((_b = dispatched.signal) === null || _b === void 0 ? void 0 : _b.aborted)
+                        throw new axios_1.CanceledError('canceled', dispatched);
+                    return adapter(dispatched);
+                });
+            };
+        };
+        const selected = config.adapter || client.defaults.adapter || axios_1.default.defaults.adapter;
+        fallback = wrapAdapter(selected);
+        config.adapter = fallback;
+        const transforms = config.transformRequest;
+        const original = transforms == null
+            ? []
+            : Array.isArray(transforms)
+                ? transforms
+                : [transforms];
+        config.transformRequest = [
+            ...original,
+            function (data) {
+                const selected = this.adapter || client.defaults.adapter || axios_1.default.defaults.adapter;
+                this.adapter = wrapAdapter(selected);
+                return data;
+            }
+        ];
+        return config;
+    }, undefined, { synchronous: true });
+};
+exports.installMockReadinessGate = installMockReadinessGate;
+// Resolve the same public Axios adapters rather than guessing from function names.
+const isBrowserTransport = (adapter, config) => {
+    for (const name of ['xhr', 'fetch']) {
+        try {
+            if (axios_1.default.getAdapter(name, config) === adapter)
+                return true;
+        }
+        catch (_a) {
+            // An adapter may be unavailable in this environment.
+        }
+    }
+    return false;
+};
+// Axios resolves XSRF at transport time. Freeze its decision only for its own
+// browser transports; a custom adapter must continue to receive unmodified config.
+const preserveBrowserXsrf = (config) => {
+    const decision = config.withXSRFToken;
+    const { xsrfCookieName, xsrfHeaderName } = config;
+    let value;
+    if (xsrfCookieName && xsrfHeaderName) {
+        const pair = document.cookie
+            .split(';')
+            .map((part) => part.replace(/^\s+/, ''))
+            .find((part) => part.slice(0, part.indexOf('=')) === xsrfCookieName);
+        if (pair) {
+            value = pair.slice(pair.indexOf('=') + 1);
+            try {
+                value = decodeURIComponent(value);
+            }
+            catch (_a) {
+                /* Axios accepts malformed encoding verbatim. */
+            }
+        }
+    }
+    // Compare actual transport origins, not Axios's location-relative XSRF check:
+    // a document <base> can change while the request is waiting.
+    const initialOrigin = new URL(axios_1.default.getUri(Object.assign(Object.assign({}, config), { params: null })), document.baseURI).origin;
+    const targetChanged = (url) => {
+        const origin = new URL(url, document.baseURI).origin;
+        return origin !== initialOrigin && origin !== location.origin;
+    };
+    config.withXSRFToken = (resolved) => {
+        // Axios serializes the URL before calling its policy and retains this
+        // headers reference if the callback replaces resolved.headers.
+        const headers = resolved.headers;
+        const result = typeof decision === 'function' ? decision(resolved) : decision;
+        const target = new URL(resolved.url || '', location.href);
+        if ((result === true ||
+            (result == null && target.origin === location.origin)) &&
+            value &&
+            xsrfHeaderName &&
+            !targetChanged(resolved.url || ''))
+            headers.set(xsrfHeaderName, value);
+        return false;
+    };
+};
+const isMockTarget = (ready, config) => {
+    if (!ready || typeof window === 'undefined')
+        return false;
+    // Query serialization belongs to the actual transport, not scope detection.
+    const target = new URL(axios_1.default.getUri(Object.assign(Object.assign({}, config), { params: null })), document.baseURI);
+    return (target.origin === ready.scope.origin &&
+        target.pathname.startsWith(ready.scope.pathname));
+};
+const waitForMockReadiness = (ready, config) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (!ready || !isMockTarget(ready, config))
+        return;
+    let result;
+    try {
+        result = yield new Promise((resolve, reject) => {
+            var _a;
+            const signal = config.signal;
+            const cancelToken = config.cancelToken;
+            let unsubscribeReadiness = () => { };
+            let finished = false;
+            const cleanup = () => {
+                var _a;
+                finished = true;
+                unsubscribeReadiness();
+                clearTimeout(timer);
+                (_a = signal === null || signal === void 0 ? void 0 : signal.removeEventListener) === null || _a === void 0 ? void 0 : _a.call(signal, 'abort', onAbort);
+                cancelToken === null || cancelToken === void 0 ? void 0 : cancelToken.unsubscribe(onCancel);
+            };
+            const onAbort = () => {
+                cleanup();
+                reject(new axios_1.CanceledError('canceled', config));
+            };
+            const onCancel = (reason) => {
+                cleanup();
+                reject(reason);
+            };
+            const timeout = typeof config.timeout === 'number' && config.timeout > 0
+                ? config.timeout
+                : 0;
+            const started = Date.now();
+            const timer = setTimeout(() => {
+                cleanup();
+                if (timeout && timeout <= 120000) {
+                    reject(new MockReadinessError_1.MockReadinessError(`timeout of ${timeout}ms exceeded while waiting for mock initialization`, 'ECONNABORTED'));
+                }
+                else {
+                    reject(new MockReadinessError_1.MockReadinessError('Mock initialization timed out'));
+                }
+            }, timeout ? Math.min(timeout, 120000) : 120000);
+            if (signal === null || signal === void 0 ? void 0 : signal.aborted)
+                return onAbort();
+            (_a = signal === null || signal === void 0 ? void 0 : signal.addEventListener) === null || _a === void 0 ? void 0 : _a.call(signal, 'abort', onAbort);
+            cancelToken === null || cancelToken === void 0 ? void 0 : cancelToken.subscribe(onCancel);
+            if (finished)
+                return;
+            unsubscribeReadiness = getReadinessHub(ready.promise).subscribe((value, failed) => {
+                if (finished)
+                    return;
+                cleanup();
+                if (failed) {
+                    reject(value);
+                }
+                else {
+                    if (timeout)
+                        config.timeout = Math.max(1, timeout - (Date.now() - started));
+                    resolve(value);
+                }
+            });
+        });
+    }
+    catch (error) {
+        if (error instanceof axios_1.CanceledError || error instanceof MockReadinessError_1.MockReadinessError)
+            throw error;
+        throw new MockReadinessError_1.MockReadinessError(`Mock initialization failed: ${String(error)}`);
+    }
+    if (result && typeof result === 'object') {
+        const value = result;
+        const failure = value.error || value.driveError || ((_a = value.boot) === null || _a === void 0 ? void 0 : _a.driveError);
+        if (failure)
+            throw new MockReadinessError_1.MockReadinessError(`Mock initialization failed: ${String(failure)}`);
+    }
+    return true;
+});
+exports.waitForMockReadiness = waitForMockReadiness;
 
 
 /***/ },
@@ -9628,6 +9979,26 @@ exports.LoginRequiredError = LoginRequiredError;
 
 /***/ },
 
+/***/ 314
+(__unused_webpack_module, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MockReadinessError = void 0;
+class MockReadinessError extends Error {
+    constructor(message, code) {
+        super(message);
+        this.name = 'MockReadinessError';
+        this.code = code;
+        Object.setPrototypeOf(this, MockReadinessError.prototype);
+    }
+}
+exports.MockReadinessError = MockReadinessError;
+
+
+/***/ },
+
 /***/ 1976
 (__unused_webpack_module, exports) {
 
@@ -9803,6 +10174,7 @@ __exportStar(__webpack_require__(7411), exports);
 __exportStar(__webpack_require__(2909), exports);
 __exportStar(__webpack_require__(7236), exports);
 __exportStar(__webpack_require__(3104), exports);
+__exportStar(__webpack_require__(314), exports);
 __exportStar(__webpack_require__(1976), exports);
 __exportStar(__webpack_require__(7403), exports);
 __exportStar(__webpack_require__(5395), exports);
@@ -10514,6 +10886,52 @@ const isUrl = (str) => {
     return true;
 };
 exports.isUrl = isUrl;
+
+
+/***/ },
+
+/***/ 459
+(__unused_webpack_module, exports) {
+
+"use strict";
+var __webpack_unused_export__;
+
+__webpack_unused_export__ = ({ value: true });
+exports.joinFolderPath = exports.normaliseFolderPath = void 0;
+/**
+ * Collapse repeated slashes in a folder path.
+ *
+ * A Viya folder path is a sequence of names separated by single slashes, so a run
+ * of slashes is always a caller's join going wrong. Two ways of getting one:
+ *
+ * - joining a parent path with a name, when the parent is the root: `'/' + '/app'`
+ *   is `'//app'` (adapter#974)
+ * - a caller passing a path it built itself, with a trailing slash or a doubled
+ *   one in the middle: `'/Users/me/' + 'app'`
+ *
+ * Some deployments do not collapse the doubled slash when it arrives in `?path=`,
+ * and answer 404 for a folder that exists, so the path a request carries has to be
+ * the path the server knows. This is applied where a path is turned into a request,
+ * not only where one is joined, so the invariant holds for every caller.
+ */
+const normaliseFolderPath = (folderPath) => {
+    const collapsed = folderPath.replace(/\/{2,}/g, '/');
+    // a single trailing slash is the other way a caller's join goes wrong, and it is
+    // not a run of slashes: '/app/' names the same folder as '/app', and asking the
+    // server about the first is a 404 on a deployment that does not tidy it up
+    return collapsed.length > 1 && collapsed.endsWith('/')
+        ? collapsed.slice(0, -1)
+        : collapsed;
+};
+exports.normaliseFolderPath = normaliseFolderPath;
+/**
+ * Join a parent folder path and a folder name into one path.
+ *
+ * The result is normalised, so a create at the root reads back the same path it
+ * wrote - which is the failure adapter#974 describes.
+ */
+const joinFolderPath = (parentFolderPath, folderName) => (0, exports.normaliseFolderPath)(`${parentFolderPath}/${folderName}`);
+exports.joinFolderPath = joinFolderPath;
 
 
 /***/ },
