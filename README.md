@@ -74,7 +74,7 @@ You are done!
 
 ## Secret scanning before commits
 
-Install the [pre-commit framework](https://pre-commit.com/#installation), then run `pre-commit install` in the checkout. The pinned Gitleaks hook scans staged changes; it is not installed automatically by npm and can be bypassed, so it does not replace CI secret scanning.
+Install the [pre-commit framework](https://pre-commit.com/#installation) and [Go](https://go.dev/doc/install), then run `pre-commit install` in the checkout. Go is needed to build the pinned Gitleaks hook on its first run. The hook scans staged changes; npm does not install it automatically, it can be bypassed, and this repository does not currently run a CI secret scan.
 
 ## Local Development
 
