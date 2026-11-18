@@ -160,6 +160,20 @@ const main = async () => {
     fail(`getdata answered rows outside ${area}`)
   }
 
+  // Include terminal CRLF and a blank physical record through the generated host.
+  const terminated = await call(`${APP}/getdata`, [
+    {
+      name: 'areas',
+      filename: 'areas.csv',
+      csv: `area:$char${area.length}. extra:$char1.\r\n\r\n${area},x\r\n`
+    }
+  ])
+  if (JSON.stringify(terminated.springs) !== JSON.stringify(springs)) {
+    fail(
+      'getdata with a blank record and terminal CRLF returned incorrect rows'
+    )
+  }
+
   /* the SAS services carry these columns; a mock that renames or drops one
    * breaks the page, which reads them by name */
   const columns = [

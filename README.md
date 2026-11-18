@@ -72,6 +72,10 @@ npm run deploy
 
 You are done!
 
+## Secret scanning before commits
+
+Install the [pre-commit framework](https://pre-commit.com/#installation) and [Go](https://go.dev/doc/install), then run `pre-commit install` in the checkout. Go is needed to build the pinned Gitleaks hook on its first run. The hook scans staged changes; npm does not install it automatically and it can be bypassed. CI separately scans full reachable Git history on pull requests to main, pushes to main, and manual runs; the release job waits for that scan. Making the scan a required merge check also needs repository branch protection. The Pages workflow runs independently.
+
 ## Local Development
 
 You can put the frontend [directly on the SAS Web Server](https://sasjs.io/frontend/deployment/), else you can also use node to spin up a local web server with CORS disabled. To install, submit `npm install http-server -g`. To execute, navigate to the location where the app is to be loaded and submit: `npx http-server --cors`
