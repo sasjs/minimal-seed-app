@@ -29,7 +29,7 @@ const script = `window.addEventListener('load', () => {
   const run = async (debug) => {
     const sas = new SASjs.default({serverUrl: el.getAttribute('serverurl'), serverType: el.getAttribute('servertype'), appLoc: el.getAttribute('apploc'), debug});
     const request = (data) => sas.request('services/common/getdata', data);
-    return [await request({areas: [{AREA: ${JSON.stringify(area)}}], extra: [{X: 'force; file'}]}), await request({unrelated: [{AREA: ${JSON.stringify(area)}}]}), await request({areas: [{OTHER: 'undefined'}]})];
+    return [await request({areas: [{AREA: ${JSON.stringify(area)}}], extra: [{X: 'force; file'}]}), await request({unrelated: [{AREA: ${JSON.stringify(area)}}]}), await request({areas: [{OTHER: 'undefined'}]}), await request({areas: [{AREA: '', EXTRA: ''}, {AREA: ${JSON.stringify(area)}, EXTRA: 'x'}, {AREA: '', EXTRA: ''}], extra: [{X: 'force; file'}]})];
   };
   // Start on native load without awaiting host readiness: the released adapter
   // must wait for the generated mock host before sending its first request.
@@ -70,7 +70,9 @@ const server = http.createServer((req, res) => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 async function main() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'seed-browser-'))
-  let chrome, ws, chromeStarted = false
+  let chrome,
+    ws,
+    chromeStarted = false
   try {
     server.listen(0, '127.0.0.1')
     await once(server, 'listening')
@@ -197,6 +199,7 @@ async function main() {
           `${visit}: unrelated table only`
         )
         assert.deepEqual(responses[2].springs, [], `${visit}: missing AREA`)
+        assert.deepEqual(responses[3].springs, expected, `${visit}: blank rows`)
       }
       assert.deepEqual(network, [], `${visit}: no API network fallthrough`)
       console.log(
@@ -205,7 +208,11 @@ async function main() {
     }
   } finally {
     if (ws) ws.close()
-    if (chromeStarted && chrome.exitCode === null && chrome.signalCode === null) {
+    if (
+      chromeStarted &&
+      chrome.exitCode === null &&
+      chrome.signalCode === null
+    ) {
       const closed = once(chrome, 'close')
       chrome.kill()
       await closed
