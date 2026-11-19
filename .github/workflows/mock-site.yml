@@ -64,6 +64,8 @@ jobs:
           npm run mock:build
           npm run test:mock
           npm run test:mock:browser
+          npm run pages:build
+          npm run pages:test
         env:
           CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
 
@@ -71,12 +73,12 @@ jobs:
       # serves the site at github.io/<repo>/ and the DNS record points nowhere
       - name: Add the custom domain
         run: |
-          printf 'minimal.sasjs.io\n' > sasjsbuild/mock/CNAME
-          touch sasjsbuild/mock/.nojekyll
+          printf 'minimal.sasjs.io\n' > sasjsbuild/pages/CNAME
+          touch sasjsbuild/pages/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: sasjsbuild/mock
+          path: sasjsbuild/pages
 
   deploy:
     name: Deploy to GitHub Pages

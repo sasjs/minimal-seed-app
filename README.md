@@ -98,6 +98,26 @@ site over http(s) on localhost - a service worker needs a secure context, so
 A published copy is built from `main` and served at
 https://minimal.sasjs.io by the "Publish the mocked site" workflow.
 
+The standalone `mock` target remains SASjs. The Pages build is separate:
+`npm run pages:build` assembles `sasjsbuild/pages` with a root chooser and
+`/sasjs/minimal/`, `/sas9/minimal/`, and `/viya/minimal/`. The former
+`/api-console/` bookmark redirects to the SASjs console. Root API and asset
+URLs from the old site are not retained: the former root app is now a chooser.
+
+**Do not publish this Pages build yet:** CLI 8.0.3 shares IndexedDB and
+localStorage across mounts. A visitor switching targets or using concurrent tabs
+can carry files and identity from one mock into another. `npm run pages:test`
+asserts isolation in a real browser and deliberately fails against the pinned
+release. Merge and publication require a released CLI with mount-scoped
+persistence, a lockfile bump, and a green browser test; an unreleased local CLI
+may be tested with `SASJS_CLI_ROOT=/absolute/path/to/built/cli npm run pages:build`.
+This override is for local testing only and the normal CI uses the locked release.
+
+The Viya page explicitly configures the actual SASVIYA adapter (web execution,
+not compute) and warns that identity, folders and job execution are unsupported;
+it is not a working SASJS imitation. SASjs and SAS9 run the JS services and
+have no SAS engine. The legacy standalone mock documentation below still applies.
+
 The page and the adapter are unchanged. The worker answers `/SASjsApi/...`
 from JavaScript services that mirror the SAS ones:
 
