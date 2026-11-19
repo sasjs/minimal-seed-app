@@ -64,30 +64,41 @@ async function main() {
         console.log(`PASS ${tier} ${visit}: actual UI and service worker`)
       }
     }
-    const key='/sasjs/drive/files/Public/chooser-isolation-proof.txt'
-    await evalAt(a,`window.SASjsMock.writeFiles({[${JSON.stringify(key)}]:'sasjs-only'})`)
-    const other=await evalAt(b,`window.SASjsMock.readAll()`)
-    assert.equal(other[key],undefined,'concurrent SAS9 tab must not read SASJS persisted files')
-    const reverse='/sasjs/drive/files/Public/chooser-sas9-only.txt'
-    await evalAt(b,`window.SASjsMock.writeFiles({[${JSON.stringify(reverse)}]:'sas9-only'})`)
-    assert.equal((await evalAt(a,'window.SASjsMock.readAll()'))[reverse],undefined,'SASJS must not read SAS9 persisted files')
-    for (const [session,expected,absent] of [[a,key,reverse],[b,reverse,key]]) {
-      const prev=await evalAt(session,'performance.timeOrigin')
-      await send('Page.reload',{},session)
-      await wait(session,`performance.timeOrigin !== ${prev} && !!window.__sasjsMockReady`,'isolation reload')
-      await evalAt(session,'window.__sasjsMockReady')
-      const files=await evalAt(session,'window.SASjsMock.readAll()')
-      assert.ok(files[expected], 'own persisted file survives reload')
-      assert.equal(files[absent],undefined,'other target file stays absent after reload')
+    await evalAt(v,'window.__sasjsMockReady')
+    const mounts = [
+      [a, 'sasjs', '/sasjs/drive/files/Public/chooser-isolation-proof.txt', 'sasjs-only'],
+      [b, 'sas9', '/sasjs/drive/files/Public/chooser-sas9-only.txt', 'sas9-only'],
+      [v, 'viya', '/sasjs/drive/files/Public/chooser-viya-only.txt', 'viya-only']
+    ]
+    for (const [session,,key,value] of mounts) {
+      await evalAt(session,`window.SASjsMock.writeFiles({[${JSON.stringify(key)}]:${JSON.stringify(value)}})`)
     }
+    for (const [session,tier,own,value] of mounts) {
+      for (const visit of ['concurrent', 'reload']) {
+        if (visit === 'reload') {
+          const prev=await evalAt(session,'performance.timeOrigin')
+          await send('Page.reload',{},session)
+          await wait(session,`performance.timeOrigin !== ${prev} && !!window.__sasjsMockReady`,tier+' isolation reload')
+          await evalAt(session,'window.__sasjsMockReady')
+        }
+        const files=await evalAt(session,'window.SASjsMock.readAll()')
+        assert.equal(files[own],value,`${tier} own file survives ${visit}`)
+        for (const [,other,key] of mounts) if (key !== own) {
+          assert.equal(files[key],undefined,`${tier} must not read ${other} file on ${visit}`)
+        }
+      }
+    }
+    const key=mounts[0][2]
     const prev=await evalAt(a,'performance.timeOrigin')
     await evalAt(a,"window.SASjsMock.as('sasjsuser')")
     await wait(a,`performance.timeOrigin !== ${prev} && !!window.__sasjsMockReady`,'identity reload')
     await evalAt(a,'window.__sasjsMockReady')
     const identityA=await evalAt(a,'window.SASjsMock.identity()')
-    const identityB=await evalAt(b,'window.SASjsMock.identity()')
     assert.equal(identityA.subject,'sasjsuser')
-    assert.notEqual(identityB && identityB.subject,'sasjsuser','identity must remain isolated')
+    for (const [session,tier] of [[b,'sas9'],[v,'viya']]) {
+      const identity=await evalAt(session,'window.SASjsMock.identity()')
+      assert.notEqual(identity && identity.subject,'sasjsuser',`${tier} identity must remain isolated`)
+    }
     const before=await evalAt(b,'performance.timeOrigin')
     await send('Page.navigate',{url:base+'/sasjs/minimal/'},b)
     await wait(b,`performance.timeOrigin !== ${before} && !!window.__sasjsMockReady`,'switch target')
