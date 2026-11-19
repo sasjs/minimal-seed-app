@@ -14,6 +14,8 @@
     "lint:fix": "npx prettier --write \"{src,test}/**/*.{ts,tsx,js,jsx,html,css,sass,less,yml,md,graphql}\"",
     "mock:build": "sasjs compile -t mock && sasjs build -t mock",
     "mock:start": "npx http-server ./sasjsbuild/mock -p 3001",
+    "pages:build": "node scripts/build-pages.js",
+    "pages:test": "node --test scripts/pages.test.js && node scripts/pages-browser.js",
     "check:data": "node scripts/springs-data.js --check",
     "test:mock": "node scripts/check-mock-site.js",
     "test:mock:browser": "node scripts/check-mock-browser.js",
@@ -32,7 +34,7 @@
   "license": "ISC",
   "devDependencies": {
     "@sasjs/adapter": "6.1.2",
-    "@sasjs/cli": "8.0.3",
+    "@sasjs/cli": "8.0.6",
     "@sasjs/core": "7.1.15",
     "@sasjs/release": "0.11.1",
     "@sasjs/utils": "4.13.2"
