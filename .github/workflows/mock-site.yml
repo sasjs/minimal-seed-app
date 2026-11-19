@@ -60,10 +60,16 @@ jobs:
         with:
           chrome-version: 158.0.8127.36
 
-      - run: |
+      - name: Build and test the single-target mock
+        run: |
           npm run mock:build
           npm run test:mock
           npm run test:mock:browser
+        env:
+          CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
+
+      - name: Build and test the three-target Pages artifact
+        run: |
           npm run pages:build
           npm run pages:test
         env:
