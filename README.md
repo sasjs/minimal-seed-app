@@ -111,6 +111,20 @@ real browser across concurrent tabs, reloads and target switches. The optional
 `SASJS_CLI_ROOT=/absolute/path/to/built/cli` override is for local CLI integration
 testing only; normal CI uses the locked release.
 
+Pages builds require Linux `flock` and use an advisory lock on `sasjsbuild` to
+refuse concurrent Pages builds. Do not remove or recreate `sasjsbuild` during a
+build or run other commands that change it concurrently. Replacement uses two
+renames, not an atomic exchange: interruption between them can temporarily leave
+`pages` absent. The next Pages build first restores a single marked backup from
+`sasjsbuild/.pages-work-*/previous-pages`, even if that build subsequently fails.
+Interrupted work directories and backups are retained, not automatically deleted.
+If there are multiple backups while `pages` is missing, or an unrecognised backup,
+the build stops: inspect the named paths, manually restore the desired backup to
+`sasjsbuild/pages`, and move or remove the others only after checking their contents.
+If `pages` exists alongside a marked backup, the site is kept and the backup is
+reported for inspection. This recovery covers process interruption, not disk failure
+or sudden power loss; it does not fsync the artifact.
+
 The Viya page explicitly configures the actual SASVIYA adapter (web execution,
 not compute) and warns that identity, folders and job execution are unsupported;
 it is not a working SASJS imitation. SASjs and SAS9 run the JS services and
