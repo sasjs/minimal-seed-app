@@ -109,26 +109,16 @@ IndexedDB and localStorage. CLI 8.0.3 shared them across mounts, allowing files
 and identity to leak between targets. `npm run pages:test` checks isolation in a
 real browser across concurrent tabs, reloads and target switches. The optional
 `SASJS_CLI_ROOT=/absolute/path/to/built/cli` override is for local CLI integration
-testing only; normal CI uses the locked release.
+testing only; normal CI uses the locked release. The build replaces the local
+Pages artifact in place; a failed or interrupted build may leave it incomplete,
+so do not run builds concurrently and keep any needed artifact separately.
 
-Pages builds require Linux `flock` and use an advisory lock on `sasjsbuild` to
-refuse concurrent Pages builds. Do not remove or recreate `sasjsbuild` during a
-build or run other commands that change it concurrently. Replacement uses two
-renames, not an atomic exchange: interruption between them can temporarily leave
-`pages` absent. The next Pages build first restores a single marked backup from
-`sasjsbuild/.pages-work-*/previous-pages`, even if that build subsequently fails.
-Interrupted work directories and backups are retained, not automatically deleted.
-If there are multiple backups while `pages` is missing, or an unrecognised backup,
-the build stops: inspect the named paths, manually restore the desired backup to
-`sasjsbuild/pages`, and move or remove the others only after checking their contents.
-If `pages` exists alongside a marked backup, the site is kept and the backup is
-reported for inspection. This recovery covers process interruption, not disk failure
-or sudden power loss; it does not fsync the artifact.
-
-The Viya page explicitly configures the actual SASVIYA adapter (web execution,
-not compute) and warns that identity, folders and job execution are unsupported;
-it is not a working SASJS imitation. SASjs and SAS9 run the JS services and
-have no SAS engine. The legacy standalone mock documentation below still applies.
+The Viya page uses the SASVIYA adapter (web execution, not compute). The pinned
+CLI does not register the browser job mocks, so the page warns that the Viya
+mock is unsupported. A CLI with that support can register the two services in
+`sasjs/mocks/viya-mock-jobs.json`; in that case the Viya page runs those
+JavaScript mocks. No target runs a SAS engine. The legacy standalone mock
+documentation below still applies.
 
 The page and the adapter are unchanged. The worker answers `/SASjsApi/...`
 from JavaScript services that mirror the SAS ones:
