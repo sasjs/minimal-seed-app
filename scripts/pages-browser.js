@@ -43,15 +43,31 @@ async function main() {
     const legacy=await tab(base+'/api-console/')
     await wait(legacy,`location.pathname === '/sasjs/minimal/api-console/'`,'legacy API console redirect')
     const a=await tab(base+'/sasjs/minimal/'), b=await tab(base+'/sas9/minimal/'), v=await tab(base+'/viya/minimal/')
+    const viyaNetwork=[]
+    let viyaSupported = false
+    ws.addEventListener('message', e => {
+      const m=JSON.parse(e.data)
+      if(m.sessionId===v && m.method==='Network.responseReceived') {
+        const r=m.params.response
+        if (/\/(identities|folders|files|jobDefinitions|jobExecution)\//.test(new URL(r.url).pathname)) viyaNetwork.push(r)
+      }
+    })
+    await send('Network.enable',{},v)
     for (const [s,tier,type] of [[a,'sasjs','SASJS'],[b,'sas9','SAS9'],[v,'viya','SASVIYA']]) {
       await wait(s,`document.readyState === 'complete' && !!window.__sasjsMockReady`,`${tier} load`)
       const meta=await evalAt(s,`({type:document.querySelector('sasjs').getAttribute('servertype'), config:sasjs.getSasjsConfig(), warning:document.body.innerText, url:location.pathname})`)
       assert.equal(meta.type,type); assert.equal(meta.config.serverType,type)
       if(tier==='viya') {
-        assert.match(meta.warning,/Viya mock unsupported/i); assert.equal(meta.config.useComputeApi,false)
+        assert.equal(meta.config.useComputeApi,false)
         assert.match(meta.config.serverUrl,/\/viya\/minimal$/)
-        console.log('PASS viya: actual SASVIYA adapter and unsupported warning')
-        continue
+        if (/Viya mock unsupported/i.test(meta.warning)) {
+          assert.notEqual(process.env.REQUIRE_VIYA_MOCK, '1', 'Viya mock support is required for this proof')
+          const config = await (await fetch(`${base}/viya/minimal/host/mock-config.json`)).json()
+          assert.ok(!Array.isArray(config.viyaMockJobs) || !config.viyaMockJobs.length)
+          console.log('PASS viya: pinned CLI correctly marked unsupported')
+          continue
+        }
+        viyaSupported = true
       }
       for (const visit of ['first','reload']) {
         if (visit==='reload') { const prev=await evalAt(s,'performance.timeOrigin'); await send('Page.reload',{},s); await wait(s,`performance.timeOrigin !== ${prev} && !!window.__sasjsMockReady`,tier+' reload') }
@@ -59,10 +75,25 @@ async function main() {
         await wait(s,`!document.querySelector('#data-container').hidden`,tier+' session '+visit)
         await evalAt(s,`document.querySelector('#load-startup-data').click()`)
         await wait(s,`!!document.querySelector('#areas-dropdown')`,tier+' appinit '+visit)
+        await evalAt(s,`document.querySelector('#areas-dropdown').selectedIndex = 1`)
+        const area=await evalAt(s,`document.querySelector('#areas-dropdown').value`)
         await evalAt(s,`document.querySelector('#load-data').click()`)
         await wait(s,`!!document.querySelector('#springs-table tbody tr')`,tier+' getdata '+visit)
+        const shown=await evalAt(s,`Array.from(document.querySelectorAll('#springs-table tbody tr'), row => row.children[3].innerText)`)
+        assert.ok(shown.length && shown.every(value=>value===area), `${tier} getdata filters on the chosen area`)
         console.log(`PASS ${tier} ${visit}: actual UI and service worker`)
       }
+    }
+    if (viyaSupported) {
+      for (const family of ['/folders/', '/files/files', '/jobDefinitions/', '/jobExecution/jobs']) {
+        assert.ok(viyaNetwork.some(r=>new URL(r.url).pathname.includes(family)), `Viya ${family} observed`)
+      }
+      for (const r of viyaNetwork) {
+        assert.equal(r.fromServiceWorker,true,`Viya worker response: ${r.url}`)
+        assert.match(Object.entries(r.headers).find(([key])=>key.toLowerCase()==='x-sasjs-emulated')?.[1] || '',/^viya@/,`Viya emulation stamp: ${r.url}`)
+        assert.ok(r.status >= 200 && r.status < 300, `Viya successful response: ${r.url} ${r.status}`)
+      }
+      console.log(`PASS viya: ${viyaNetwork.length} stamped responses came from the service worker (folder, file upload, definition and JES)`)
     }
     await evalAt(v,'window.__sasjsMockReady')
     const mounts = [
@@ -105,6 +136,6 @@ async function main() {
     await evalAt(b,'window.__sasjsMockReady')
     assert.equal((await evalAt(b,'window.SASjsMock.readAll()'))[key],'sasjs-only','switching tab reads destination drive')
     console.log('PASS persisted drives and identities isolated between concurrent tabs, reloads and switches')
-  } finally { if(ws)ws.close(); if(chrome && chrome.exitCode===null && chrome.signalCode===null){const done=once(chrome,'close');chrome.kill();await done} await new Promise(r=>server.close(r)); fs.rmSync(dir,{recursive:true,force:true}) }
+  } finally { if(ws)ws.close(); if(chrome && chrome.exitCode===null && chrome.signalCode===null){const done=once(chrome,'close');chrome.kill();await done} await new Promise(r=>server.close(r)); fs.rmSync(dir,{recursive:true,force:true,maxRetries:10,retryDelay:100}) }
 }
 main().catch(e=>{console.error(e);process.exitCode=1})
