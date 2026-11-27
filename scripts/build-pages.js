@@ -12,6 +12,13 @@ const work = fs.mkdtempSync(path.join(root, '.pages-work-'))
 const seed = path.join(work, 'seed')
 fs.mkdirSync(seed)
 fs.cpSync(path.join(root, 'sasjsbuild/services'), path.join(seed, 'services'), { recursive: true })
+const appLoc = '/Public/app/minimal-seed-app'
+// The manifest is the source of truth for which services the mock registers: the
+// CLI reads the copy seeded into the build, and the support check below reads
+// this same array. Neither restates the service list.
+const registration = JSON.parse(
+  fs.readFileSync(path.join(root, 'sasjs/mocks/viya-mock-jobs.json'), 'utf8')
+)
 fs.copyFileSync(path.join(root, 'sasjs/mocks/viya-mock-jobs.json'), path.join(seed, 'viya-mock-jobs.json'))
 process.projectDir = root
 process.sasjsConstants = { buildDestinationFolder: seed }
@@ -19,6 +26,13 @@ process.sasjsConfig = { syncFolder: 'sasjs/mocks' }
 process.logger = console
 const { buildMockSite } = require(path.join(cliRoot, 'build/commands/build/internal/mockSite/mockSite.js'))
 const pages = path.join(root, 'sasjsbuild/pages')
+// One definition, written into the page and then looked for when support is
+// recorded: a drift between the two would otherwise leave the unsupported
+// notice on a page the build calls supported.
+const VIYA_NOTICE =
+  '<p id="viya-mock-notice" role="alert"><strong>Viya mock unsupported:</strong> this CLI does not register browser job mocks; this demonstration will not work.</p>'
+const VIYA_SUPPORTED_NOTICE =
+  '<p>Browser mock: registered JavaScript services only; no SAS engine is running.</p>'
 async function main() {
   fs.rmSync(pages, { recursive: true, force: true })
   fs.mkdirSync(pages, { recursive: true })
@@ -31,18 +45,21 @@ async function main() {
       const index = path.join(source, 'index.html')
       let html = fs.readFileSync(index, 'utf8')
       html = html.replace('serverType="SASJS"', 'serverType="SASVIYA"').replace('useComputeApi="true"', 'useComputeApi="false"')
-      html = html.replace('<main>', '<main><p id="viya-mock-notice" role="alert"><strong>Viya mock unsupported:</strong> this CLI does not register browser job mocks; this demonstration will not work.</p>')
+      if (!html.includes('<main>')) throw new Error('the Viya page has no <main> to carry the mock notice')
+      html = html.replace('<main>', `<main>${VIYA_NOTICE}`)
       fs.writeFileSync(index, html)
     }
     const output = path.join(pages, name, 'minimal')
-    await buildMockSite({ name, serverType: type, appLoc: '/Public/app/minimal-seed-app', streamConfig: { webSourcePath: source, mockWebFolder: output, mockWebBasePath: `/${name}/minimal` } })
+    await buildMockSite({ name, serverType: type, appLoc, streamConfig: { webSourcePath: source, mockWebFolder: output, mockWebBasePath: `/${name}/minimal` } })
     if (name === 'viya') {
       const config = JSON.parse(fs.readFileSync(path.join(output, 'host/mock-config.json'), 'utf8'))
-      const expected = ['appinit', 'getdata'].map(service => `/Public/app/minimal-seed-app/services/common/${service}`)
-      viyaSupported = Array.isArray(config.viyaMockJobs) && expected.every(job => config.viyaMockJobs.includes(job))
+      const expected = registration.map((entry) => `${appLoc}/${entry}`)
+      viyaSupported = expected.length > 0 && Array.isArray(config.viyaMockJobs) && expected.every((job) => config.viyaMockJobs.includes(job))
       if (viyaSupported) {
         const index = path.join(output, 'index.html')
-        fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace('<p id="viya-mock-notice" role="alert"><strong>Viya mock unsupported:</strong> this CLI does not register browser job mocks; this demonstration will not work.</p>', '<p>Browser mock: registered JavaScript services only; no SAS engine is running.</p>'))
+        const built = fs.readFileSync(index, 'utf8')
+        if (!built.includes(VIYA_NOTICE)) throw new Error('the Viya mock notice is missing, so support could not be recorded on the page')
+        fs.writeFileSync(index, built.replace(VIYA_NOTICE, VIYA_SUPPORTED_NOTICE))
       }
     }
   }
