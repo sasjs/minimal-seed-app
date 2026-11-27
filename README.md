@@ -76,76 +76,34 @@ You are done!
 
 Install the [pre-commit framework](https://pre-commit.com/#installation) and [Go](https://go.dev/doc/install), then run `pre-commit install` in the checkout. Go is needed to build the pinned Gitleaks hook on its first run. The hook scans staged changes; npm does not install it automatically and it can be bypassed. CI separately scans full reachable Git history on pull requests to main, pushes to main, and manual runs; the release job waits for that scan. Making the scan a required merge check also needs repository branch protection. The Pages workflow runs independently.
 
-## Local Development
+## Mocked development (no SAS)
 
-You can put the frontend [directly on the SAS Web Server](https://sasjs.io/frontend/deployment/), else you can also use node to spin up a local web server with CORS disabled. To install, submit `npm install http-server -g`. To execute, navigate to the location where the app is to be loaded and submit: `npx http-server --cors`
+Each SAS service has a JavaScript twin in `sasjs/mocks/services/common/` - `appinit.js` and `getdata.js`. They answer the same `webout()` JSON as the `.sas` files beside them, so the frontend cannot tell which one is talking to it. That is what lets the app run with no SAS and no backend.
 
-## Mocked build (no backend)
-
-The `mock` target builds the app as a static site whose backend runs in the
-browser, so it can be developed, demoed and reviewed without a SAS server:
+### A static site in the browser (SASjs CLI)
 
 ```bash
-npm run mock:build
-npm run mock:start
+npm run mock:build   # sasjs compile -t mock && sasjs build -t mock
+npm run mock:start   # serve sasjsbuild/mock at http://localhost:3001
 ```
 
-`npm run mock:build` compiles the project and writes the site to
-`sasjsbuild/mock`; `mock:start` serves it at http://localhost:3001. Open the
-site over http(s) on localhost - a service worker needs a secure context, so
-`file://` does not work.
+The `mock` target sets `streamConfig.mockWeb`, so the build writes an ordinary folder of static files: the frontend, the JavaScript services, and a service worker. The worker intercepts the calls the adapter makes, runs the matching JS service and returns its webout, so requests appear in DevTools like any other and anything written to the drive survives a refresh (IndexedDB).
 
-A published copy is built from `main` and served at
-https://minimal.sasjs.io by the "Publish the mocked site" workflow.
+Serve it over http(s) - a service worker needs a secure context, so `file://` does not work.
 
-The standalone `mock` target remains SASjs. The Pages build is separate:
-`npm run pages:build` assembles `sasjsbuild/pages` with a root chooser and
-`/sasjs/minimal/`, `/sas9/minimal/`, and `/viya/minimal/`. The former
-`/api-console/` bookmark redirects to the SASjs console. Root API and asset
-URLs from the old site are not retained: the former root app is now a chooser.
+### On SASjs Server
 
-The Pages build pins `@sasjs/cli` 10.1.0, which provides mount-scoped
-IndexedDB and localStorage. CLI 8.0.3 shared them across mounts, allowing files
-and identity to leak between targets. `npm run pages:test` checks isolation in a
-real browser across concurrent tabs, reloads and target switches. The optional
-`SASJS_CLI_ROOT=/absolute/path/to/built/cli` override is for local CLI integration
-testing only; normal CI uses the locked release. The build replaces the local
-Pages artifact in place; a failed or interrupted build may leave it incomplete,
-so do not run builds concurrently and keep any needed artifact separately.
+Deploy normally with `sasjs cbd -t server`: the `.js` files travel in the pack and land on the drive beside the `.sas` ones. A service asked for without an extension is resolved by trying each run time in `RUN_TIMES` order, so the run time decides which one answers - `RUN_TIMES=js,sas` runs the mocks, the default `sas,js` runs the SAS services. See [JavaScript services](https://cli.sasjs.io/js-services).
 
-The Viya page uses the SASVIYA adapter (web execution, not compute). The pinned
-CLI registers the browser job mocks, so the page runs every compiled service that
-carries a JavaScript twin under `sasjs/mocks` as JavaScript. A CLI without that
-support is detected at build time and the page then warns that the Viya mock is
-unsupported. A project that wants a different set can ship
-`<syncFolder>/viya-mock-jobs.json`, which replaces the derived list. No target
-runs a SAS engine. The legacy standalone mock documentation below still applies.
+### The data
 
-The page and the adapter are unchanged. The worker answers `/SASjsApi/...`
-from JavaScript services that mirror the SAS ones:
+`springs.json` is generated from the dataset's model by `scripts/springs-data.js` (same seven columns, same ranges, fixed seed), not copied out of SAS, so the mocks agree with `mydb.springs` in shape, not in values. Edit the model and run `node scripts/springs-data.js`; `npm run check:data` fails when the committed file and the generator disagree.
 
--   `sasjs/mocks/services/common/appinit.js` returns the areas
--   `sasjs/mocks/services/common/getdata.js` returns the springs for the chosen areas
--   `sasjs/mocks/services/common/springs.json` holds the rows themselves
+### The published demo
 
-`springs.json` is a generated fixture, not a copy of the SAS dataset:
-`scripts/springs-data.js` writes it from the dataset's model - the same seven
-columns, the same value ranges, the same nullable temperatures - with a fixed
-seed, so the file is reproducible rather than random and the mock answers the
-same rows on every build. The SAS services read `mydb.springs`, so the two
-agree in shape, not in values.
+https://minimal.sasjs.io is built from `main` by `npm run pages:build` and holds three mocks of the same app - `/sasjs/minimal/`, `/sas9/minimal/` and `/viya/minimal/` - behind a chooser at the root. No SAS engine runs there either.
 
-Change the model in that script and run `node scripts/springs-data.js`;
-`npm run check:data` fails when the committed file is not what the script
-produces, so the fixture cannot drift from its generator.
-
-The same JS services are what `sasjs cb -t server` ships for the `server`
-target, which is why a deployment to sasjs/server also answers without SAS.
-
-A mocked build is a development and demo vehicle. The data lives in the
-browser, there is no SAS engine behind it, and nothing computed by SAS (PROC
-SQL, formats, CAS) exists there - use a real target for anything that needs
-SAS.
+A mock has no SAS engine behind it - no PROC SQL, no formats, no CAS - so use a real target for anything that needs SAS. Everything else about browser builds is in the [build docs](https://cli.sasjs.io/build).
 
 
 ## Contributors ✨
