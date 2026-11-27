@@ -93,7 +93,7 @@ Serve it over http(s) - a service worker needs a secure context, so `file://` do
 
 ### On SASjs Server
 
-Deploy normally with `sasjs cbd -t server`: the `.js` files travel in the pack and land on the drive beside the `.sas` ones. Which one answers is a run time question - a service asked for without an extension is resolved against the run times the server is configured with, in order - so a server with `js` enabled runs the mocks, and one left on SAS runs the SAS services. See [JavaScript services](https://cli.sasjs.io/js-services).
+Deploy normally with `sasjs cbd -t server`: the `.js` files travel in the pack beside the `.sas` ones, so the deployment carries the mocks and can answer from JavaScript as well as from SAS. See [JavaScript services](https://cli.sasjs.io/js-services).
 
 ### The data
 
