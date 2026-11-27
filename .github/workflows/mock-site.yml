@@ -74,6 +74,10 @@ jobs:
           npm run pages:test
         env:
           CHROMIUM_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          # the pinned CLI must register the browser job mocks: without this the
+          # Viya page would quietly fall back to its unsupported notice and CI
+          # would stay green while the published site is degraded
+          REQUIRE_VIYA_MOCK: 1
 
       # a custom domain is a file in the published folder: without it Pages
       # serves the site at github.io/<repo>/ and the DNS record points nowhere
