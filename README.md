@@ -114,11 +114,12 @@ Pages artifact in place; a failed or interrupted build may leave it incomplete,
 so do not run builds concurrently and keep any needed artifact separately.
 
 The Viya page uses the SASVIYA adapter (web execution, not compute). The pinned
-CLI registers the browser job mocks, so the page runs the two services listed in
-`sasjs/mocks/viya-mock-jobs.json` as JavaScript. A CLI without that support is
-detected at build time and the page then warns that the Viya mock is
-unsupported. No target runs a SAS engine. The legacy standalone mock
-documentation below still applies.
+CLI registers the browser job mocks, so the page runs every compiled service that
+carries a JavaScript twin under `sasjs/mocks` as JavaScript. A CLI without that
+support is detected at build time and the page then warns that the Viya mock is
+unsupported. A project that wants a different set can ship
+`<syncFolder>/viya-mock-jobs.json`, which replaces the derived list. No target
+runs a SAS engine. The legacy standalone mock documentation below still applies.
 
 The page and the adapter are unchanged. The worker answers `/SASjsApi/...`
 from JavaScript services that mirror the SAS ones:

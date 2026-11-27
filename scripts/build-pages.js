@@ -13,13 +13,21 @@ const seed = path.join(work, 'seed')
 fs.mkdirSync(seed)
 fs.cpSync(path.join(root, 'sasjsbuild/services'), path.join(seed, 'services'), { recursive: true })
 const appLoc = '/Public/app/minimal-seed-app'
-// The manifest is the source of truth for which services the mock registers: the
-// CLI reads the copy seeded into the build, and the support check below reads
-// this same array. Neither restates the service list.
-const registration = JSON.parse(
-  fs.readFileSync(path.join(root, 'sasjs/mocks/viya-mock-jobs.json'), 'utf8')
-)
-fs.copyFileSync(path.join(root, 'sasjs/mocks/viya-mock-jobs.json'), path.join(seed, 'viya-mock-jobs.json'))
+// The pinned CLI registers every compiled service that carries a JavaScript twin,
+// so these files are what the build has to verify: enumerate them rather than
+// keeping a second list in step with them. A project that wants a different set
+// still ships <syncFolder>/viya-mock-jobs.json, which replaces the derivation.
+const mocksRoot = path.join(root, 'sasjs/mocks')
+const twins = []
+const collectTwins = (dir) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) collectTwins(full)
+    // the registered path is the service without its extension: JES names it
+    else if (entry.name.endsWith('.js')) twins.push(path.relative(mocksRoot, full).split(path.sep).join('/').replace(/\.js$/, ''))
+  }
+}
+collectTwins(mocksRoot)
 process.projectDir = root
 process.sasjsConstants = { buildDestinationFolder: seed }
 process.sasjsConfig = { syncFolder: 'sasjs/mocks' }
@@ -53,7 +61,7 @@ async function main() {
     await buildMockSite({ name, serverType: type, appLoc, streamConfig: { webSourcePath: source, mockWebFolder: output, mockWebBasePath: `/${name}/minimal` } })
     if (name === 'viya') {
       const config = JSON.parse(fs.readFileSync(path.join(output, 'host/mock-config.json'), 'utf8'))
-      const expected = registration.map((entry) => `${appLoc}/${entry}`)
+      const expected = twins.map((twin) => `${appLoc}/${twin}`)
       viyaSupported = expected.length > 0 && Array.isArray(config.viyaMockJobs) && expected.every((job) => config.viyaMockJobs.includes(job))
       if (viyaSupported) {
         const index = path.join(output, 'index.html')
